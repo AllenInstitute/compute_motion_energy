@@ -46,7 +46,7 @@ def get_results_folder() -> str:
         str: Path to the results folder.
     """
     # Placeholder implementation, update with actual results folder logic if needed
-    return '/path/to/results'
+    return '/root/capsule/results'
 
 def get_zarr_path(metadata: dict, path_to: str = 'motion_energy') -> str:
     """

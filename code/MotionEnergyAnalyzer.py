@@ -64,6 +64,7 @@ class MotionEnergyAnalyzer:
             cropped_motion_energy = cropped_motion_energy.rechunk((100, H, W)) 
         else:
             motion_energy = da.abs(grayscale_frames[1:] - grayscale_frames[:-1])
+            motion_energy = motion_energy.rechunk((100, H, W)) 
             #motion_energy = self._compute_motion_energy(grayscale_frames)
 
 
@@ -76,9 +77,10 @@ class MotionEnergyAnalyzer:
 
         # Save motion energy frames to Zarr
         me_zarr_path = utils.get_zarr_path(self.loaded_metadata)
+        print(me_zarr_path)
         me_zarr_store = zarr.DirectoryStore(me_zarr_path)
         # Perform operations with the Zarr store
-        root_group = zarr.open_group(me_zarr_store, mode='r')
+        root_group = zarr.group(me_zarr_store, overwrite=True)
         motion_energy.to_zarr(me_zarr_store, component='data', overwrite=True)
         if crop:
             cropped_motion_energy.to_zarr(me_zarr_store, component='cropped_data', overwrite=True)
