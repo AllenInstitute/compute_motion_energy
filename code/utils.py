@@ -38,6 +38,16 @@ def get_crop_region() -> tuple:
     """
     return (100, 100, 300, 400)
 
+def get_results_folder() -> str:
+    """
+    Retrieve the path to the results folder. Modify this function as needed to fit your project structure.
+
+    Returns:
+        str: Path to the results folder.
+    """
+    # Placeholder implementation, update with actual results folder logic if needed
+    return '/path/to/results'
+
 def get_zarr_path(metadata: dict, path_to: str = 'motion_energy') -> str:
     """
     Construct the path for saving Zarr storage based on metadata.
@@ -55,7 +65,7 @@ def get_zarr_path(metadata: dict, path_to: str = 'motion_energy') -> str:
     # Create the directory if it doesn't exist
     os.makedirs(zarr_path, exist_ok=True)
 
-    filename = 'processed_frames.zarr' if path_to == 'gray_frames' else 'motion_energy_frames.zarr'
+    filename = 'processed_frames_zarr' if path_to == 'gray_frames' else 'motion_energy_frames.zarr'
     return os.path.join(zarr_path, filename)
 
 def get_data_path(metadata: dict) -> str:
@@ -91,3 +101,29 @@ def construct_zarr_folder(metadata: dict) -> str:
         return f"{metadata['mouse_id']}_{metadata['camera_label']}_{metadata['data_asset_id']}"
     except KeyError as e:
         raise KeyError(f"Missing required metadata field: {e}")
+
+
+def save_video(frames, video_path = '', video_name='motion_energy_clip.avi', fps=60, num_frames = 1000):
+    """
+    Save the provided frames to a video file using OpenCV.
+    """
+    
+    output_video_path = os.path.join(video_path, video_name)
+    # Get frame shape and number of frames
+    print(type(frames))
+    _, frame_height, frame_width = frames.shape
+
+    # Specify the codec and create the VideoWriter object
+    fourcc = cv2.VideoWriter_fourcc(*'XVID')
+    out = cv2.VideoWriter(output_video_path, fourcc, fps, (frame_width, frame_height), isColor=False)
+
+    # Process and write each frame to the video file
+    for i in range(5000, num_frames+5000):
+        frame = frames[i].compute()  # Compute the frame to load it into memory
+        frame = frame.astype('uint8')  # Ensure the frame is of type uint8 for video
+        out.write(frame)  # Write the frame to the video file
+
+    # Release the video writer
+    out.release()
+    print(f"Video saved to '{tput_video_pathou}'")
+

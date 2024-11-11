@@ -1,6 +1,4 @@
-Here's the cleaned-up version of the code with corrected typos, missing variables, and formatting improvements:
 
-```python
 import numpy as np
 import cv2
 import zarr
@@ -20,39 +18,23 @@ class MotionEnergyAnalyzer:
     def _load_metadata(self):
         """Load metadata from the Zarr store."""
         root_group = zarr.open_group(self.zarr_store_frames, mode='r')
-        self.loaded_metadata = json.loads(root_group.attrs['metadata'])
-
-    def _save_video(frames, output_video_path='output_movie.avi', fps=60, num_frames = 1000):
-        """
-        Save the provided frames to a video file using OpenCV.
-        """
-        # Get frame shape and number of frames
-        _, frame_height, frame_width = frames.shape
-
-        # Specify the codec and create the VideoWriter object
-        fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        out = cv2.VideoWriter(output_video_path, fourcc, fps, (frame_width, frame_height), isColor=False)
-
-        # Process and write each frame to the video file
-        for i in range(num_frames):
-            frame = frames[i].compute()  # Compute the frame to load it into memory
-            frame = frame.astype('uint8')  # Ensure the frame is of type uint8 for video
-            out.write(frame)  # Write the frame to the video file
-
-        # Release the video writer
-        out.release()
-        print(f"Video saved to '{output_video_path}'")
-
-    def compute_motion_energy(self, frames):
-        """
-        Compute motion energy from a set of frames.
-        Motion energy is computed as the sum of absolute differences between consecutive frames.
-        """
-        if len(frames) < 2:
-            raise ValueError("At least two frames are required to compute motion energy.")
+        metadata = json.loads(root_group.attrs['metadata'])
+        metadata['crop'] = False
+        self.loaded_metadata = metadata
         
-        motion_energy = da.abs(frames[1:] - frames[:-1])
-        return motion_energy
+
+    ## TypeError: _compute_motion_energy() takes 1 positional argument but 2 were given
+
+    # def _compute_motion_energy(frames):
+    #     """
+    #     Compute motion energy from a set of frames.
+    #     Motion energy is computed as the sum of absolute differences between consecutive frames.
+    #     """
+    #     if len(frames) < 2:
+    #         raise ValueError("At least two frames are required to compute motion energy.")
+        
+    #     motion_energy = da.abs(frames[1:] - frames[:-1])
+    #     return motion_energy
 
 
     def analyze(self):
@@ -61,29 +43,42 @@ class MotionEnergyAnalyzer:
         Applies cropping if the crop attribute is True and saves results.
         """
         # Load the frames from Zarr
-        grayscale_frames = da.from_zarr(self.zarr_store_frames)
+        grayscale_frames = da.from_zarr(self.zarr_store_frames, component='data')
 
         # Load metadata
         self._load_metadata()
 
         # Check for cropping option
-        crop = self.loaded_metadata.get('crop', False)
+        crop = self.loaded_metadata.get('crop')
+        H, W = self.loaded_metadata.get('height'), self.loaded_metadata.get('width')
 
         if crop:
             crop_region = utils.get_crop_region()
             crop_y_start, crop_x_start, crop_y_end, crop_x_end = crop_region
-            motion_energy = self.compute_motion_energy(grayscale_frames)
+            motion_energy = da.abs(grayscale_frames[1:] - grayscale_frames[:-1])
+            motion_energy = motion_energy.rechunk((100, H, W))  # Adjust based on available memory
+            #motion_energy = self._compute_motion_energy(grayscale_frames)
             cropped_motion_energy = motion_energy[:, crop_y_start:crop_y_end, crop_x_start:crop_x_end]
+            H, W = np.diff(crop_y_end, crop_y_start), np.diff(crop_x_end, crop_x_start)
+            cropped_motion_energy = cropped_motion_energy.rechunk((100, H, W)) 
         else:
-            motion_energy = self.compute_motion_energy(grayscale_frames)
+            motion_energy = da.abs(grayscale_frames[1:] - grayscale_frames[:-1])
+            #motion_energy = self._compute_motion_energy(grayscale_frames)
+
 
         # Save motion energy frames as a video
-        self._save_video(motion_energy, fps=self.loaded_metadata['fps'], num_frames=10000)
+        print(type(motion_energy))
+        zarr_folder = utils.construct_zarr_folder(self.loaded_metadata)
+        video_path = os.path.join(utils.get_results_folder(), utils.construct_zarr_folder(self.loaded_metadata))
+
+        utils.save_video(frames = motion_energy, video_path = video_path, fps=self.loaded_metadata.get('fps'), num_frames=10000)
 
         # Save motion energy frames to Zarr
         zarr_path = utils.get_zarr_path(self)
         zarr_store = zarr.DirectoryStore(zarr_path)
         motion_energy.to_zarr(zarr_store, component='data', overwrite=True)
+        if crop:
+            cropped_motion_energy.to_zarr(zarr_store, component='cropped_data', overwrite=True)
 
         # Add metadata to the Zarr store
         root_group = zarr.group(store=zarr_store, overwrite=True)
@@ -95,4 +90,4 @@ class MotionEnergyAnalyzer:
         self.motion_energy_sum = sum_trace.reshape(-1, 1)
 
         return self
-```
+
