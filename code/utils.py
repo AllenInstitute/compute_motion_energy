@@ -125,5 +125,5 @@ def save_video(frames, video_path = '', video_name='motion_energy_clip.avi', fps
 
     # Release the video writer
     out.release()
-    print(f"Video saved to '{tput_video_pathou}'")
+    print(f"Video saved to '{output_video_path}'")
 

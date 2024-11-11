@@ -44,7 +44,8 @@ class MotionEnergyAnalyzer:
         """
         # Load the frames from Zarr
         grayscale_frames = da.from_zarr(self.zarr_store_frames, component='data')
-
+        #grayscale_frames = grayscale_frames[:10000,:,:]
+        #print('using subset of frames for testing')
         # Load metadata
         self._load_metadata()
 
@@ -71,19 +72,20 @@ class MotionEnergyAnalyzer:
         zarr_folder = utils.construct_zarr_folder(self.loaded_metadata)
         video_path = os.path.join(utils.get_results_folder(), utils.construct_zarr_folder(self.loaded_metadata))
 
-        utils.save_video(frames = motion_energy, video_path = video_path, fps=self.loaded_metadata.get('fps'), num_frames=10000)
+        utils.save_video(frames = motion_energy, video_path = video_path, fps=self.loaded_metadata.get('fps'), num_frames=100)
 
         # Save motion energy frames to Zarr
-        zarr_path = utils.get_zarr_path(self)
-        zarr_store = zarr.DirectoryStore(zarr_path)
-        motion_energy.to_zarr(zarr_store, component='data', overwrite=True)
+        me_zarr_path = utils.get_zarr_path(self.loaded_metadata)
+        me_zarr_store = zarr.DirectoryStore(me_zarr_path)
+        # Perform operations with the Zarr store
+        root_group = zarr.open_group(me_zarr_store, mode='r')
+        motion_energy.to_zarr(me_zarr_store, component='data', overwrite=True)
         if crop:
-            cropped_motion_energy.to_zarr(zarr_store, component='cropped_data', overwrite=True)
+            cropped_motion_energy.to_zarr(me_zarr_store, component='cropped_data', overwrite=True)
 
         # Add metadata to the Zarr store
-        root_group = zarr.group(store=zarr_store, overwrite=True)
         root_group.attrs['metadata'] = json.dumps(self.loaded_metadata)
-        print(f'Saved motion energy frames to {zarr_path}')
+        print(f'Saved motion energy frames to {me_zarr_path}')
 
         # Compute trace and save it to the object
         sum_trace = motion_energy.sum(axis=(1, 2)).compute()
