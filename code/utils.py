@@ -37,7 +37,7 @@ def get_crop_region() -> tuple:
     """
     return (100, 100, 300, 400)
 
-def get_results_folder() -> str:
+def get_results_path() -> str:
     """
     Retrieve the path to the results folder. Modify this function as needed to fit your project structure.
 

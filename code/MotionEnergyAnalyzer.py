@@ -6,7 +6,7 @@ import dask.array as da
 import json
 import os
 import utils
-
+import pickle
 
 class MotionEnergyAnalyzer:
     def __init__(self, frame_zarr_path: str):
@@ -68,15 +68,16 @@ class MotionEnergyAnalyzer:
 
 
         # Save motion energy frames as a video
-        print(type(motion_energy))
-        zarr_folder = utils.construct_zarr_folder(self.loaded_metadata)
-        video_path = os.path.join(utils.get_results_folder(), utils.construct_zarr_folder(self.loaded_metadata))
+        # path in results to where data from this video will be saved
+        top_zarr_folder = utils.construct_zarr_folder(self.loaded_metadata)
+        top_zarr_path = os.path.join(utils.get_results_path(), top_zarr_folder)
+        print(f'Saved short motion energy movie in {top_zarr_path}')
 
-        utils.save_video(frames = motion_energy, video_path = video_path, fps=self.loaded_metadata.get('fps'), num_frames=100)
+        utils.save_video(frames = motion_energy, video_path = top_zarr_path, fps=self.loaded_metadata.get('fps'), num_frames=100)
 
         # Save motion energy frames to Zarr
-        me_zarr_path = utils.get_zarr_path(self.loaded_metadata)
-        print(me_zarr_path)
+        me_zarr_path = utils.get_zarr_path(self.loaded_metadata, path_to='motion_energy')
+        print('Creating folder for motion energy frames of full video...')
         me_zarr_store = zarr.DirectoryStore(me_zarr_path)
         # Perform operations with the Zarr store
         root_group = zarr.group(me_zarr_store, overwrite=True)
@@ -92,5 +93,14 @@ class MotionEnergyAnalyzer:
         sum_trace = motion_energy.sum(axis=(1, 2)).compute()
         self.motion_energy_sum = sum_trace.reshape(-1, 1)
 
-        return self
+        #save object
+        with open(f'{top_zar_path}/{top_zarr_folder}.pkl', 'wb') as file:
+            pickle.sump(self, file)
+        print('saved object')
+
+        # save motion energy trace for redundancy as np array
+        np.savez(f'{top_zar_path}/{top_zarr_folder}.npz', array1 = self.motion_energy_sum)
+        print('saved me trace')
+
+        
 
