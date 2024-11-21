@@ -1,6 +1,5 @@
 
 import numpy as np
-import cv2
 import zarr
 import dask
 import dask.array as da

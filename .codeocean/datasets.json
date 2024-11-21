@@ -2,8 +2,16 @@
 	"version": 1,
 	"attached_datasets": [
 		{
-			"id": "d7f7d258-32e1-4452-878e-10f926eae9ce",
-			"mount": "test_data_1"
+			"id": "b419b6e8-112d-4eca-af82-ed5e2519f9a0",
+			"mount": "721291_Face_21707174-ce69-4ce2-b7b5-9e0ce26bbc59"
+		},
+		{
+			"id": "f16496b1-b89a-4e7f-ba2a-b7e59358b8db",
+			"mount": "721291_Face_ff11a262-7cbd-4576-8548-1558d6bda9d1"
+		},
+		{
+			"id": "f3a98445-3ab2-4c59-aab6-5e98ff6548cd",
+			"mount": "721291_Face_d33cb1d6-b65b-4d2f-8fbd-e93136fd44ae"
 		}
 	]
 }
