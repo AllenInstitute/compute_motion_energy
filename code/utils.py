@@ -3,6 +3,7 @@ import os
 import json
 import numpy as np
 from tqdm import tqdm
+import cv2
 
 def find_zarr_paths(directory: str = '/root/capsule/data', subselect: str = None) -> list:
     """
@@ -59,7 +60,7 @@ def get_zarr_path(metadata: dict, path_to: str = 'motion_energy') -> str:
         str: Full path to the Zarr storage file.
     """
     zarr_folder = construct_zarr_folder(metadata)
-    zarr_path = os.path.join(get_results_folder(), zarr_folder)
+    zarr_path = os.path.join(get_results_path(), zarr_folder)
 
     # Create the directory if it doesn't exist
     os.makedirs(zarr_path, exist_ok=True)
@@ -78,7 +79,7 @@ def get_data_path(metadata: dict) -> str:
         str: Full path to the data storage folder.
     """
     data_folder = construct_zarr_folder(metadata)
-    data_path = os.path.join(get_results_folder(), data_folder)
+    data_path = os.path.join(get_results_path(), data_folder)
 
     # Create the directory if it doesn't exist
     os.makedirs(data_path, exist_ok=True)
