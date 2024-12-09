@@ -94,7 +94,7 @@ class MotionEnergyAnalyzer:
 
         #save object
         with open(f'{top_zarr_path}/{top_zarr_folder}.pkl', 'wb') as file:
-            pickle.sump(self, file)
+            pickle.dump(self, file)
         print('saved object')
 
         # save motion energy trace for redundancy as np array
