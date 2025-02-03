@@ -1,5 +1,5 @@
 metadata_version: 1
-name: compute_motion_energy
+name: compute_motion_energy_AIND_schema
 description: Computes motion energy based on output of load_video
 authors:
 - name: Iryna Yavorska
