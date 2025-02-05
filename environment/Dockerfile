@@ -13,7 +13,8 @@ ADD "https://github.com/coder/code-server/releases/download/v4.9.0/code-server-4
 RUN pip3 install -U --no-cache-dir \
     opencv-python==4.10.0.84 \
 	dask \
-	zarr
+	zarr \
+	matplotlib
 
 RUN cd /.code-server \
 	&& tar -xvf code-server.tar.gz \
