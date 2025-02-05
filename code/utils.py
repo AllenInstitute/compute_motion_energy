@@ -1,26 +1,28 @@
 
 import os
 import json
-import cv2
 import numpy as np
 from tqdm import tqdm
+import cv2
 
-def find_zarr_paths(directory: str = '/root/capsule/data', subselect: str = None) -> list:
+def find_zarr_paths(directory: str = '/root/capsule/data', subselect: str = '', tag: str = '') -> list:
     """
     Retrieve paths to Zarr directories within the specified directory, optionally filtered by a subdirectory.
 
     Args:
         directory (str): The base directory to search for Zarr files.
         subselect (str): Optional subdirectory name to filter the search.
+        tag (str): str tag in video filename to include. (not being used)
 
     Returns:
         list: A list of paths to Zarr directories.
     """
     zarr_paths = []
     for root, dirs, _ in os.walk(directory):
-        if subselect and subselect not in root:
+        if subselect not in root:
             continue  # Skip directories that don't match the subselect filter
-
+        
+        
         for d in tqdm(dirs, desc=f"Searching for Zarr directories in {root}"):
             if 'zarr' in d:
                 full_path = os.path.join(root, d)
@@ -36,9 +38,10 @@ def get_crop_region() -> tuple:
     Returns:
         tuple: A tuple (y_start, x_start, y_end, x_end) representing the crop coordinates.
     """
-    return (100, 100, 300, 400)
+    # return (100, 100, 300, 400)
+    return (200, 290, 280, 360) # for Thyme
 
-def get_results_folder() -> str:
+def get_results_path() -> str:
     """
     Retrieve the path to the results folder. Modify this function as needed to fit your project structure.
 
@@ -60,7 +63,7 @@ def get_zarr_path(metadata: dict, path_to: str = 'motion_energy') -> str:
         str: Full path to the Zarr storage file.
     """
     zarr_folder = construct_zarr_folder(metadata)
-    zarr_path = os.path.join(get_results_folder(), zarr_folder)
+    zarr_path = os.path.join(get_results_path(), zarr_folder)
 
     # Create the directory if it doesn't exist
     os.makedirs(zarr_path, exist_ok=True)
@@ -79,7 +82,7 @@ def get_data_path(metadata: dict) -> str:
         str: Full path to the data storage folder.
     """
     data_folder = construct_zarr_folder(metadata)
-    data_path = os.path.join(get_results_folder(), data_folder)
+    data_path = os.path.join(get_results_path(), data_folder)
 
     # Create the directory if it doesn't exist
     os.makedirs(data_path, exist_ok=True)
