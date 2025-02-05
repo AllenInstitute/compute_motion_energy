@@ -5,22 +5,24 @@ import numpy as np
 from tqdm import tqdm
 import cv2
 
-def find_zarr_paths(directory: str = '/root/capsule/data', subselect: str = None) -> list:
+def find_zarr_paths(directory: str = '/root/capsule/data', subselect: str = '', tag: str = '') -> list:
     """
     Retrieve paths to Zarr directories within the specified directory, optionally filtered by a subdirectory.
 
     Args:
         directory (str): The base directory to search for Zarr files.
         subselect (str): Optional subdirectory name to filter the search.
+        tag (str): str tag in video filename to include. (not being used)
 
     Returns:
         list: A list of paths to Zarr directories.
     """
     zarr_paths = []
     for root, dirs, _ in os.walk(directory):
-        if subselect and subselect not in root:
+        if subselect in root:
             continue  # Skip directories that don't match the subselect filter
-
+        
+        
         for d in tqdm(dirs, desc=f"Searching for Zarr directories in {root}"):
             if 'zarr' in d:
                 full_path = os.path.join(root, d)
