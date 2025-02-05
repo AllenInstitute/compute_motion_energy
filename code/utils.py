@@ -19,7 +19,7 @@ def find_zarr_paths(directory: str = '/root/capsule/data', subselect: str = '', 
     """
     zarr_paths = []
     for root, dirs, _ in os.walk(directory):
-        if subselect in root:
+        if subselect not in root:
             continue  # Skip directories that don't match the subselect filter
         
         
@@ -38,7 +38,8 @@ def get_crop_region() -> tuple:
     Returns:
         tuple: A tuple (y_start, x_start, y_end, x_end) representing the crop coordinates.
     """
-    return (100, 100, 300, 400)
+    # return (100, 100, 300, 400)
+    return (200, 290, 280, 360) # for Thyme
 
 def get_results_path() -> str:
     """

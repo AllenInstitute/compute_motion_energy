@@ -18,7 +18,7 @@ class MotionEnergyAnalyzer:
         """Load metadata from the Zarr store."""
         root_group = zarr.open_group(self.zarr_store_frames, mode='r')
         metadata = json.loads(root_group.attrs['metadata'])
-        metadata['crop'] = False
+        metadata['crop'] = True
         self.loaded_metadata = metadata
         
 
