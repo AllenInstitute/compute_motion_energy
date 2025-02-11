@@ -2,6 +2,10 @@
 	"version": 1,
 	"attached_datasets": [
 		{
+			"id": "90a3f0a5-a652-4268-a1ae-6b8a2fdcf63a",
+			"mount": "Thyme_736963_Face_zarr_motion_energy"
+		},
+		{
 			"id": "be22d98d-9851-4f0c-9412-3c63c2e07135",
 			"mount": "Thyme_736963_Face_Zarr"
 		}
