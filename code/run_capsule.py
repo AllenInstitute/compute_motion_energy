@@ -8,7 +8,7 @@ from MotionEnergyAnalyzer import MotionEnergyAnalyzer
 zarr_paths = utils.find_zarr_paths()
 
 def run():
-    for zarr_path in zarr_paths:
+    for zarr_path in zarr_paths[:3]:
         start_time = time.time()  # Start the timer
 
         me_analyser = MotionEnergyAnalyzer(zarr_path)
