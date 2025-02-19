@@ -1,4 +1,4 @@
-# Motion Energy Analysis Pipeline  
+# Motion Energy Analysis Capsule
 
 This repository a second step in Behavior Video QC a pipeline to analyze motion energy from grayscale video frames stored in Zarr format. The script loads frames, computes motion energy, applies cropping if specified, and saves the results as a sample video and Zarr files.
 
