@@ -6,8 +6,8 @@ This repository a second step in Behavior Video QC a pipeline to analyze motion 
 - Loads grayscale video frames from Zarr format.  
 - Computes motion energy as the absolute difference between consecutive frames.  
 - Supports optional cropping for region-based motion analysis. Crop region is specified in `utils.get_crop_region()`
-- Saves motion energy frames in zarr format and computed sum motion energy trace in .npz file.  
-- Saves metadata and object attributes as a dictionary.  
+- Saves motion energy frames and metadata in zarr group and computed sum motion energy trace in .npz file.  
+- Saves metadata and object attributes as a dictionary for redundancy.  
 - Tracks processing time.  
 
 ## Prerequisites  
