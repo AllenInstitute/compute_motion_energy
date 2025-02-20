@@ -9,7 +9,7 @@ import utils
 import pickle
 
 class MotionEnergyAnalyzer:
-    def __init__(self, frame_zarr_path: str):
+    def __init__(self, frame_zarr_path: str, crop: boot = True):
         self.frame_zarr_path = frame_zarr_path
         self.zarr_store_frames = zarr.DirectoryStore(frame_zarr_path)
         self.loaded_metadata = None
@@ -18,7 +18,7 @@ class MotionEnergyAnalyzer:
         """Load metadata from the Zarr store."""
         root_group = zarr.open_group(self.zarr_store_frames, mode='r')
         metadata = json.loads(root_group.attrs['metadata'])
-        metadata['crop'] = True # this needs to be added to the metadata when the zarr files are saved
+        metadata['crop'] = crop # this needs to be added to the metadata when the zarr files are saved
         self.loaded_metadata = metadata
         
 
@@ -98,6 +98,11 @@ class MotionEnergyAnalyzer:
         print('saved me trace')
 
         # #save object
+        me_dict = utils.object_to_dict(self)
+        with open(f'{top_zarr_path}/{top_zarr_folder}_from_object.pkl', 'wb') as file:
+            pickle.dump(self, file)
+        print('saved object')
+
         # with open(f'{top_zarr_path}/{top_zarr_folder}.pkl', 'wb') as file:
         #     pickle.dump(self, file)
         # print('saved object')

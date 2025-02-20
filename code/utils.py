@@ -105,7 +105,24 @@ def construct_zarr_folder(metadata: dict) -> str:
     except KeyError as e:
         raise KeyError(f"Missing required metadata field: {e}")
 
+def object_to_dict(obj):
+    """
+    Recursively converts an object to a dictionary.
 
+    Args:
+        obj: The object to convert.
+
+    Returns:
+        dict: The dictionary representation of the object.
+    """
+    if hasattr(obj, "__dict__"):
+        return {key: object_to_dict(value) for key, value in vars(obj).items()}
+    if isinstance(obj, list):
+        return [object_to_dict(item) for item in obj]
+    if isinstance(obj, dict):
+        return {key: object_to_dict(value) for key, value in obj.items()}
+    return obj
+    
 def save_video(frames, video_path = '', video_name='motion_energy_clip.avi', fps=60, num_frames = 1000):
     """
     Save the provided frames to a video file using OpenCV.
