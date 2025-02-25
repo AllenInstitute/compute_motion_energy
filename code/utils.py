@@ -26,7 +26,7 @@ def find_zarr_paths(directory: str = '/root/capsule/data', subselect: str = '', 
         for d in tqdm(dirs, desc=f"Searching for Zarr directories in {root}"):
             if 'zarr' in d:
                 full_path = os.path.join(root, d)
-                print(f"Found Zarr directory: {full_path}")
+                print(f"\nFound Zarr directory: {full_path}")
                 zarr_paths.append(full_path)
 
     return zarr_paths
@@ -96,7 +96,7 @@ def construct_zarr_folder(metadata: dict) -> str:
         str: Constructed folder name.
     """
     try:
-        return f"{metadata['mouse_id']}_{metadata['data_asset_name']_{metadata['camera_label']}_motion_energy}"
+        return f"{metadata['mouse_id']}_{metadata['data_asset_name']}_{metadata['camera_label']}_motion_energy"
     except KeyError as e:
         raise KeyError(f"Missing required metadata field: {e}")
 

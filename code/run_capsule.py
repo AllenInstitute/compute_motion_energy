@@ -5,8 +5,8 @@ import utils
 import time  # Added for timing
 from MotionEnergyAnalyzer import MotionEnergyAnalyzer
 
-zarr_paths = utils.find_zarr_paths()
-
+zarr_paths = np.unique(utils.find_zarr_paths())
+print(f'Found len(zarr_paths).')
 def run():
     for zarr_path in zarr_paths:
         start_time = time.time()  # Start the timer
