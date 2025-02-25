@@ -38,6 +38,7 @@ class MotionEnergyAnalyzer:
         ### Compute motion energy frames ###
         H, W = self.video_metadata.get('height'), self.video_metadata.get('width')
         motion_energy_frames = da.abs(grayscale_frames[1:] - grayscale_frames[:-1])
+        print('Dropped first frame of the video since its metadata')
         motion_energy_frames = motion_energy_frames.rechunk((100, H, W))  # Adjust based on available memory
 
         if self.crop: 
@@ -46,14 +47,18 @@ class MotionEnergyAnalyzer:
             H, W = crop_y_end - crop_y_start, crop_x_end - crop_x_start
             cropped_motion_energy_frames = cropped_motion_energy_frames.rechunk((100, H, W)) 
 
+        print('Motion Energy frames are done.')
+
         ### Construct path where to save data ###
         top_zarr_folder = utils.construct_zarr_folder(self.video_metadata)
         top_zarr_path = os.path.join(utils.get_results_path(), top_zarr_folder)
 
         ### Save motion energy frames as a video ###
         # path in results to where data from this video will be saved
-        utils.save_video(frames = motion_energy_frames, video_path = top_zarr_path, 
-            fps=self.video_metadata.get('fps'), num_frames=100)
+        utils.save_video(frames = motion_energy_frames, video_path = top_zarr_path,
+        video_name='motion_energy_clip.avi', fps=self.video_metadata.get('fps'), num_frames=1000)
+        utils.save_video(frames = grayscale_frames, video_path = top_zarr_path,
+        video_name='example_video_clip.avi', fps=self.video_metadata.get('fps'), num_frames=1000)
 
         # Save motion energy frames to zarr
         me_zarr_filename = utils.get_zarr_filename(path_to='motion_energy')
@@ -61,9 +66,9 @@ class MotionEnergyAnalyzer:
 
         me_zarr_store = zarr.DirectoryStore(me_zarr_path)
         root_group = zarr.group(me_zarr_store, overwrite=True)
-        motion_energy.to_zarr(me_zarr_store, component='full_frames', overwrite=True)
-        if crop:
-            cropped_motion_energy.to_zarr(me_zarr_store, component='cropped_frames', overwrite=True)
+        motion_energy_frames.to_zarr(me_zarr_store, component='full_frames', overwrite=True)
+        if self.crop:
+            cropped_motion_energy_frames.to_zarr(me_zarr_store, component='cropped_frames', overwrite=True)
         print(f'Saved motion energy frames to {me_zarr_path}')
 
         ### Add metadata to the Zarr store ###
@@ -75,7 +80,7 @@ class MotionEnergyAnalyzer:
         ### Compute trace and save it to the object ###
         sum_trace = motion_energy_frames.sum(axis=(1, 2)).compute().reshape(-1, 1)
         self.full_frame_motion_energy_sum = sum_trace
-        if crop:
+        if self.crop:
             self.cropped_frame_motion_energy_sum = \
             cropped_motion_energy_frames.sum(axis=(1, 2)).compute().reshape(-1, 1)
         else:
