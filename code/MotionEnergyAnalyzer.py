@@ -9,7 +9,7 @@ import utils
 import pickle
 
 class MotionEnergyAnalyzer:
-    def __init__(self, frame_zarr_path: str, crop: boot = True):
+    def __init__(self, frame_zarr_path: str, crop: bool = True):
         self.frame_zarr_path = frame_zarr_path
         self.zarr_store_frames = zarr.DirectoryStore(frame_zarr_path)
         self.loaded_metadata = None
