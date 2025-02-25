@@ -24,7 +24,7 @@ class MotionEnergyAnalyzer:
         self.video_metadata = metadata
 
 
-    def analyze(self):
+    def _analyze(self):
         """
         Analyze motion energy based on the frames.
         Applies cropping if the crop attribute is True and saves results.
@@ -87,13 +87,13 @@ class MotionEnergyAnalyzer:
             self.cropped_frame_motion_energy_sum = np.full(len(sum_trace), np.nan).reshape(-1, 1)
 
         # save motion energy trace for redundancy as np array
-        np.savez(f'{top_zarr_path}/{top_zarr_folder}/motion_energy.npz', 
+        np.savez(f'{top_zarr_path}/motion_energy_trace.npz', 
             full_frame_motion_energy = self.full_frame_motion_energy_sum, cropped_frame_motion_energy = self.cropped_frame_motion_energy_sum)
         print('saved motion energy trace to npz file for redundancy.')
 
         ## save object as dicitonary
         obj_dict = utils.object_to_dict(self)  
-        with open(f'{top_zarr_path}/{top_zarr_folder}/motion_energy_dictionary.pkl', 'wb') as file:
+        with open(f'{top_zarr_path}/motion_energy_dictionary.pkl', 'wb') as file:
             pickle.dump(obj_dict, file)
         print('saved motion energy object as dicitonary, for redundancy.')
 
