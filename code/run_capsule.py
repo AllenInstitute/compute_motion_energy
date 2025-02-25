@@ -12,7 +12,7 @@ def run():
         start_time = time.time()  # Start the timer
 
         me_analyser = MotionEnergyAnalyzer(zarr_path)
-        me_analyser.analyze()
+        me_analyser._analyze()
 
         end_time = time.time()  # End the timer
         duration = end_time - start_time
