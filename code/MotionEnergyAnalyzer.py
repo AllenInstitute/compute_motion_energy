@@ -9,19 +9,96 @@ import utils
 import pickle
 
 class MotionEnergyAnalyzer:
-    def __init__(self, frame_zarr_path: str, crop: boot = True):
+    def __init__(self, frame_zarr_path: str, crop: bool = True):
         self.frame_zarr_path = frame_zarr_path
         self.zarr_store_frames = zarr.DirectoryStore(frame_zarr_path)
-        self.loaded_metadata = None
-
+        self.video_metadata = None
+        self.crop = crop
+        if crop:
+            self.crop_region = utils.get_crop_region()
+            
     def _load_metadata(self):
         """Load metadata from the Zarr store."""
         root_group = zarr.open_group(self.zarr_store_frames, mode='r')
         metadata = json.loads(root_group.attrs['metadata'])
-        metadata['crop'] = crop # this needs to be added to the metadata when the zarr files are saved
-        self.loaded_metadata = metadata
-        
+        self.video_metadata = metadata
 
+
+    def _analyze(self):
+        """
+        Analyze motion energy based on the frames.
+        Applies cropping if the crop attribute is True and saves results.
+        """
+        ### Load the frames from Zarr ###
+        grayscale_frames = da.from_zarr(self.zarr_store_frames, component='data')
+
+        ### Load metadata ###
+        self._load_metadata()
+
+        ### Compute motion energy frames ###
+        H, W = self.video_metadata.get('height'), self.video_metadata.get('width')
+        motion_energy_frames = da.abs(grayscale_frames[1:] - grayscale_frames[:-1])
+        print('Dropped first frame of the video since its metadata')
+        motion_energy_frames = motion_energy_frames.rechunk((100, H, W))  # Adjust based on available memory
+
+        if self.crop: 
+            crop_y_start, crop_x_start, crop_y_end, crop_x_end = self.crop_region
+            cropped_motion_energy_frames = motion_energy_frames[:, crop_y_start:crop_y_end, crop_x_start:crop_x_end]
+            H, W = crop_y_end - crop_y_start, crop_x_end - crop_x_start
+            cropped_motion_energy_frames = cropped_motion_energy_frames.rechunk((100, H, W)) 
+
+        print('Motion Energy frames are done.')
+
+        ### Construct path where to save data ###
+        top_zarr_folder = utils.construct_zarr_folder(self.video_metadata)
+        top_zarr_path = os.path.join(utils.get_results_path(), top_zarr_folder)
+
+        ### Save motion energy frames as a video ###
+        # path in results to where data from this video will be saved
+        utils.save_video(frames = motion_energy_frames, video_path = top_zarr_path,
+        video_name='motion_energy_clip.avi', fps=self.video_metadata.get('fps'), num_frames=1000)
+        utils.save_video(frames = grayscale_frames, video_path = top_zarr_path,
+        video_name='example_video_clip.avi', fps=self.video_metadata.get('fps'), num_frames=1000)
+
+        # Save motion energy frames to zarr
+        me_zarr_filename = utils.get_zarr_filename(path_to='motion_energy')
+        me_zarr_path = os.path.join(top_zarr_path, me_zarr_filename)
+
+        me_zarr_store = zarr.DirectoryStore(me_zarr_path)
+        root_group = zarr.group(me_zarr_store, overwrite=True)
+        motion_energy_frames.to_zarr(me_zarr_store, component='full_frames', overwrite=True)
+        if self.crop:
+            cropped_motion_energy_frames.to_zarr(me_zarr_store, component='cropped_frames', overwrite=True)
+        print(f'Saved motion energy frames to {me_zarr_path}')
+
+        ### Add metadata to the Zarr store ###
+        # Turn object attributed to dicitonary
+        meta_dict = utils.object_to_dict(self)
+        root_group.attrs['metadata'] = json.dumps(meta_dict)
+        print('added metadata to zarr files.')
+
+        ### Compute trace and save it to the object ###
+        sum_trace = motion_energy_frames.sum(axis=(1, 2)).compute().reshape(-1, 1)
+        self.full_frame_motion_energy_sum = sum_trace
+        if self.crop:
+            self.cropped_frame_motion_energy_sum = \
+            cropped_motion_energy_frames.sum(axis=(1, 2)).compute().reshape(-1, 1)
+        else:
+            self.cropped_frame_motion_energy_sum = np.full(len(sum_trace), np.nan).reshape(-1, 1)
+
+        # save motion energy trace for redundancy as np array
+        np.savez(f'{top_zarr_path}/motion_energy_trace.npz', 
+            full_frame_motion_energy = self.full_frame_motion_energy_sum, cropped_frame_motion_energy = self.cropped_frame_motion_energy_sum)
+        print('saved motion energy trace to npz file for redundancy.')
+
+        ## save object as dicitonary
+        obj_dict = utils.object_to_dict(self)  
+        with open(f'{top_zarr_path}/motion_energy_dictionary.pkl', 'wb') as file:
+            pickle.dump(obj_dict, file)
+        print('saved motion energy object as dicitonary, for redundancy.')
+
+
+        
     ## TypeError: _compute_motion_energy() takes 1 positional argument but 2 were given
 
     # def _compute_motion_energy(frames):
@@ -34,80 +111,6 @@ class MotionEnergyAnalyzer:
         
     #     motion_energy = da.abs(frames[1:] - frames[:-1])
     #     return motion_energy
-
-
-    def analyze(self):
-        """
-        Analyze motion energy based on the frames.
-        Applies cropping if the crop attribute is True and saves results.
-        """
-        # Load the frames from Zarr
-        grayscale_frames = da.from_zarr(self.zarr_store_frames, component='data')
-        #grayscale_frames = grayscale_frames[:10000,:,:]
-        #print('using subset of frames for testing')
-        # Load metadata
-        self._load_metadata()
-
-        # get frame size
-        H, W = self.loaded_metadata.get('height'), self.loaded_metadata.get('width')
-        # Check for cropping option
-        crop = self.loaded_metadata.get('crop')
-        if crop:
-            crop_region = utils.get_crop_region()
-            self.loaded_metadata['crop_region'] = crop_region
-            crop_y_start, crop_x_start, crop_y_end, crop_x_end = crop_region
-            motion_energy = da.abs(grayscale_frames[1:] - grayscale_frames[:-1])
-            motion_energy = motion_energy.rechunk((100, H, W))  # Adjust based on available memory
-            cropped_motion_energy = motion_energy[:, crop_y_start:crop_y_end, crop_x_start:crop_x_end]
-            H, W = crop_y_end - crop_y_start, crop_x_end - crop_x_start
-            cropped_motion_energy = cropped_motion_energy.rechunk((100, H, W)) 
-        else:
-            motion_energy = da.abs(grayscale_frames[1:] - grayscale_frames[:-1])
-            motion_energy = motion_energy.rechunk((100, H, W))
-            self.loaded_metadata['crop_region'] = None
-
-
-        # Save motion energy frames as a video
-        # path in results to where data from this video will be saved
-        top_zarr_folder = utils.construct_zarr_folder(self.loaded_metadata)
-        top_zarr_path = os.path.join(utils.get_results_path(), top_zarr_folder)
-
-        utils.save_video(frames = motion_energy, video_path = top_zarr_path, fps=self.loaded_metadata.get('fps'), num_frames=100)
-
-        # Save motion energy frames to Zarr
-        me_zarr_path = utils.get_zarr_path(self.loaded_metadata, path_to='motion_energy')
-        print('Creating folder for motion energy frames of full video...')
-        me_zarr_store = zarr.DirectoryStore(me_zarr_path)
-        # Perform operations with the Zarr store
-        root_group = zarr.group(me_zarr_store, overwrite=True)
-        motion_energy.to_zarr(me_zarr_store, component='data', overwrite=True)
-        if crop:
-            cropped_motion_energy.to_zarr(me_zarr_store, component='cropped_data', overwrite=True)
-        print(f'Saved motion energy frames to {me_zarr_path}')
-
-        # Add metadata to the Zarr store
-        root_group.attrs['metadata'] = json.dumps(self.loaded_metadata)
-        print(f'Saved metadata to {me_zarr_path}')
-
-        # Compute trace and save it to the object
-        sum_trace = motion_energy.sum(axis=(1, 2)).compute()
-        self.motion_energy_sum = sum_trace.reshape(-1, 1)
-
-        # save motion energy trace for redundancy as np array
-        np.savez(f'{top_zarr_path}/{top_zarr_folder}.npz', array1 = self.motion_energy_sum)
-        print('saved me trace')
-
-        # #save object
-        me_dict = utils.object_to_dict(self)
-        with open(f'{top_zarr_path}/{top_zarr_folder}_from_object.pkl', 'wb') as file:
-            pickle.dump(self, file)
-        print('saved object')
-
-        # with open(f'{top_zarr_path}/{top_zarr_folder}.pkl', 'wb') as file:
-        #     pickle.dump(self, file)
-        # print('saved object')
-        # this is unnecessary, you can get crop region and fps from metadata
-        
 
         
 
