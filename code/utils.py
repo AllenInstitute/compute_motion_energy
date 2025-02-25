@@ -51,7 +51,7 @@ def get_results_path() -> str:
     # Placeholder implementation, update with actual results folder logic if needed
     return '/root/capsule/results'
 
-def get_zarr_path(metadata: dict, path_to: str = 'motion_energy') -> str:
+def get_zarr_filename(path_to: str = 'motion_energy') -> str:
     """
     Construct the path for saving Zarr storage based on metadata.
 
@@ -62,14 +62,9 @@ def get_zarr_path(metadata: dict, path_to: str = 'motion_energy') -> str:
     Returns:
         str: Full path to the Zarr storage file.
     """
-    zarr_folder = construct_zarr_folder(metadata)
-    zarr_path = os.path.join(get_results_path(), zarr_folder)
-
-    # Create the directory if it doesn't exist
-    os.makedirs(zarr_path, exist_ok=True)
 
     filename = 'processed_frames_zarr' if path_to == 'gray_frames' else 'motion_energy_frames.zarr'
-    return os.path.join(zarr_path, filename)
+    return filename
 
 def get_data_path(metadata: dict) -> str:
     """
