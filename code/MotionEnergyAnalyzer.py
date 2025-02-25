@@ -52,7 +52,7 @@ class MotionEnergyAnalyzer:
 
         ### Save motion energy frames as a video ###
         # path in results to where data from this video will be saved
-        utils.save_video(frames = motion_energy, video_path = top_zarr_path, 
+        utils.save_video(frames = motion_energy_frames, video_path = top_zarr_path, 
             fps=self.video_metadata.get('fps'), num_frames=100)
 
         # Save motion energy frames to zarr
