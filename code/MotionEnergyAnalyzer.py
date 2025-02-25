@@ -76,7 +76,7 @@ class MotionEnergyAnalyzer:
         sum_trace = motion_energy_frames.sum(axis=(1, 2)).compute().reshape(-1, 1)
         self.full_frame_motion_energy_sum = sum_trace
         if crop:
-            self.cropped_frame_motion_energy_sum = 
+            self.cropped_frame_motion_energy_sum = \
             cropped_motion_energy_frames.sum(axis=(1, 2)).compute().reshape(-1, 1)
         else:
             self.cropped_frame_motion_energy_sum = np.full(len(sum_trace), np.nan).reshape(-1, 1)
