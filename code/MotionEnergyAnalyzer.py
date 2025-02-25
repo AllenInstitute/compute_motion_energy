@@ -22,20 +22,6 @@ class MotionEnergyAnalyzer:
         root_group = zarr.open_group(self.zarr_store_frames, mode='r')
         metadata = json.loads(root_group.attrs['metadata'])
         self.video_metadata = metadata
-        
-
-    ## TypeError: _compute_motion_energy() takes 1 positional argument but 2 were given
-
-    # def _compute_motion_energy(frames):
-    #     """
-    #     Compute motion energy from a set of frames.
-    #     Motion energy is computed as the sum of absolute differences between consecutive frames.
-    #     """
-    #     if len(frames) < 2:
-    #         raise ValueError("At least two frames are required to compute motion energy.")
-        
-    #     motion_energy = da.abs(frames[1:] - frames[:-1])
-    #     return motion_energy
 
 
     def analyze(self):
@@ -43,30 +29,24 @@ class MotionEnergyAnalyzer:
         Analyze motion energy based on the frames.
         Applies cropping if the crop attribute is True and saves results.
         """
-        # Load the frames from Zarr
+        ### Load the frames from Zarr ###
         grayscale_frames = da.from_zarr(self.zarr_store_frames, component='data')
-        #grayscale_frames = grayscale_frames[:10000,:,:]
-        #print('using subset of frames for testing')
-        # Load metadata
+
+        ### Load metadata ###
         self._load_metadata()
 
-        # get frame size
+        ### Compute motion energy frames ###
         H, W = self.video_metadata.get('height'), self.video_metadata.get('width')
-        # Check for cropping option
-        crop = self.video_metadata.get('crop')
-        if crop:
+        motion_energy_frames = da.abs(grayscale_frames[1:] - grayscale_frames[:-1])
+        motion_energy_frames = motion_energy_frames.rechunk((100, H, W))  # Adjust based on available memory
+
+        if self.crop: 
             crop_y_start, crop_x_start, crop_y_end, crop_x_end = self.crop_region
-            motion_energy = da.abs(grayscale_frames[1:] - grayscale_frames[:-1])
-            motion_energy = motion_energy.rechunk((100, H, W))  # Adjust based on available memory
-            cropped_motion_energy = motion_energy[:, crop_y_start:crop_y_end, crop_x_start:crop_x_end]
+            cropped_motion_energy_frames = motion_energy_frames[:, crop_y_start:crop_y_end, crop_x_start:crop_x_end]
             H, W = crop_y_end - crop_y_start, crop_x_end - crop_x_start
-            cropped_motion_energy = cropped_motion_energy.rechunk((100, H, W)) 
-        else:
-            motion_energy = da.abs(grayscale_frames[1:] - grayscale_frames[:-1])
-            motion_energy = motion_energy.rechunk((100, H, W))
-            self.crop_region = None
+            cropped_motion_energy_frames = cropped_motion_energy_frames.rechunk((100, H, W)) 
 
-
+        ### Construct path where to save data ###
         top_zarr_folder = utils.construct_zarr_folder(self.video_metadata)
         top_zarr_path = os.path.join(utils.get_results_path(), top_zarr_folder)
 
@@ -81,9 +61,9 @@ class MotionEnergyAnalyzer:
 
         me_zarr_store = zarr.DirectoryStore(me_zarr_path)
         root_group = zarr.group(me_zarr_store, overwrite=True)
-        motion_energy.to_zarr(me_zarr_store, component='data', overwrite=True)
+        motion_energy.to_zarr(me_zarr_store, component='full_frames', overwrite=True)
         if crop:
-            cropped_motion_energy.to_zarr(me_zarr_store, component='cropped_data', overwrite=True)
+            cropped_motion_energy.to_zarr(me_zarr_store, component='cropped_frames', overwrite=True)
         print(f'Saved motion energy frames to {me_zarr_path}')
 
         ### Add metadata to the Zarr store ###
@@ -93,12 +73,13 @@ class MotionEnergyAnalyzer:
         print('added metadata to zarr files.')
 
         ### Compute trace and save it to the object ###
-        sum_trace = motion_energy.sum(axis=(1, 2)).compute()
-        self.full_frame_motion_energy_sum = sum_trace.reshape(-1, 1)
+        sum_trace = motion_energy_frames.sum(axis=(1, 2)).compute().reshape(-1, 1)
+        self.full_frame_motion_energy_sum = sum_trace
         if crop:
-            self.cropped_frame_motion_energy_sum = cropped_motion_energy.sum(axis=(1, 2)).compute()
+            self.cropped_frame_motion_energy_sum = 
+            cropped_motion_energy_frames.sum(axis=(1, 2)).compute().reshape(-1, 1)
         else:
-            self.cropped_frame_motion_energy_sum = np.full(len(sum_trace), np.nan)
+            self.cropped_frame_motion_energy_sum = np.full(len(sum_trace), np.nan).reshape(-1, 1)
 
         # save motion energy trace for redundancy as np array
         np.savez(f'{top_zarr_path}/{top_zarr_folder}/motion_energy.npz', 
@@ -113,6 +94,18 @@ class MotionEnergyAnalyzer:
 
 
         
+    ## TypeError: _compute_motion_energy() takes 1 positional argument but 2 were given
+
+    # def _compute_motion_energy(frames):
+    #     """
+    #     Compute motion energy from a set of frames.
+    #     Motion energy is computed as the sum of absolute differences between consecutive frames.
+    #     """
+    #     if len(frames) < 2:
+    #         raise ValueError("At least two frames are required to compute motion energy.")
+        
+    #     motion_energy = da.abs(frames[1:] - frames[:-1])
+    #     return motion_energy
 
         
 
