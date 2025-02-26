@@ -4,8 +4,9 @@ import json
 import numpy as np
 from tqdm import tqdm
 import cv2
+from pathlib import Path
 
-def find_zarr_paths(directory: str = '/root/capsule/data', subselect: str = '', tag: str = '') -> list:
+def find_zarr_paths(directory: Path = Path("*/data"), subselect: str = '', tag: str = '') -> list:
     """
     Retrieve paths to Zarr directories within the specified directory, optionally filtered by a subdirectory.
 
@@ -41,7 +42,7 @@ def get_crop_region() -> tuple:
     # return (100, 100, 300, 400)
     return (200, 290, 280, 360) # for Thyme
 
-def get_results_path() -> str:
+def get_results_path() -> Path:
     """
     Retrieve the path to the results folder. Modify this function as needed to fit your project structure.
 
@@ -49,7 +50,7 @@ def get_results_path() -> str:
         str: Path to the results folder.
     """
     # Placeholder implementation, update with actual results folder logic if needed
-    return '/root/capsule/results'
+    return Path("*/results/") #'/root/capsule/results'
 
 def get_zarr_filename(path_to: str = 'motion_energy') -> str:
     """
