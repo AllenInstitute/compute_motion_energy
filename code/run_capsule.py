@@ -4,6 +4,7 @@ from tqdm import tqdm
 import utils
 import time  # Added for timing
 from MotionEnergyAnalyzer import MotionEnergyAnalyzer
+import numpy as np
 
 zarr_paths = np.unique(utils.find_zarr_paths())
 print(f'Found len(zarr_paths).')
