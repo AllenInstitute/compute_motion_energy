@@ -70,6 +70,7 @@ class MotionEnergyAnalyzer:
         motion_energy_frames.to_zarr(me_zarr_store, component='full_frames', overwrite=True)
         if self.crop:
             cropped_motion_energy_frames.to_zarr(me_zarr_store, component='cropped_frames', overwrite=True)
+            print('Saved cropped frames too.')
         print(f'Saved motion energy frames to {me_zarr_path}')
 
         ### Add metadata to the Zarr store ###
