@@ -6,12 +6,12 @@ from tqdm import tqdm
 import cv2
 from pathlib import Path
 
-def find_zarr_paths(directory: Path = Path("*/data"), subselect: str = '', tag: str = '') -> list:
+def find_zarr_paths(directory: Path = Path(), subselect: str = '', tag: str = '') -> list:
     """
     Retrieve paths to Zarr directories within the specified directory, optionally filtered by a subdirectory.
 
     Args:
-        directory (str): The base directory to search for Zarr files.
+        directory (Path): The base directory to search for Zarr files.
         subselect (str): Optional subdirectory name to filter the search.
         tag (str): str tag in video filename to include. (not being used)
 
@@ -40,50 +40,48 @@ def get_crop_region() -> tuple:
         tuple: A tuple (y_start, x_start, y_end, x_end) representing the crop coordinates.
     """
     # return (100, 100, 300, 400)
+    print('using crop region for Thyme face camera')
     return (200, 290, 280, 360) # for Thyme
 
-def get_results_path() -> Path:
+def get_results_folder(pipeline: bool = True) -> Path:
     """
-    Retrieve the path to the results folder. Modify this function as needed to fit your project structure.
+    Get the results folder path.
 
     Returns:
         str: Path to the results folder.
     """
-    # Placeholder implementation, update with actual results folder logic if needed
-    return Path("*/results/") #'/root/capsule/results'
+    if pipeline:
+        return Path('/results/')
+    else:
+        return Path('/root/capsule/results')
+
+
+def get_data_folder(pipeline: bool = True) -> Path:
+    """
+    Get the data folder path.
+
+    Returns:
+        str: Path to the results folder.
+    """
+    if pipeline:
+        return Path('/data/')
+    else:
+        return Path('/root/capsule/data')
+
 
 def get_zarr_filename(path_to: str = 'motion_energy') -> str:
     """
     Construct the path for saving Zarr storage based on metadata.
 
     Args:
-        metadata (dict): A dictionary containing metadata such as 'mouse_id', 'camera_label', and 'data_asset_name'.
         path_to (str): Specifies the type of frames to be saved ('gray_frames' or 'motion_energy_frames').
 
     Returns:
         str: Full path to the Zarr storage file.
     """
 
-    filename = 'processed_frames_zarr' if path_to == 'gray_frames' else 'motion_energy_frames.zarr'
+    filename = 'processed_frames.zarr' if path_to == 'gray_frames' else 'motion_energy_frames.zarr'
     return filename
-
-def get_data_path(metadata: dict) -> str:
-    """
-    Construct the path for data storage based on metadata.
-
-    Args:
-        metadata (dict): A dictionary containing metadata such as 'mouse_id', 'camera_label', and 'data_asset_name'.
-
-    Returns:
-        str: Full path to the data storage folder.
-    """
-    data_folder = construct_zarr_folder(metadata)
-    data_path = os.path.join(get_results_path(), data_folder)
-
-    # Create the directory if it doesn't exist
-    os.makedirs(data_path, exist_ok=True)
-
-    return data_path
 
 
 def construct_zarr_folder(metadata: dict) -> str:
@@ -119,9 +117,6 @@ def object_to_dict(obj):
         return {key: object_to_dict(value) for key, value in obj.items()}
     return obj
 
-import os
-import cv2
-import numpy as np
 
 def save_video(frames, video_path='', video_name='motion_energy_clip.avi', fps=60, num_frames=1000):
     """

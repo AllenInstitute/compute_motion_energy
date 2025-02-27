@@ -6,7 +6,8 @@ import time  # Added for timing
 from MotionEnergyAnalyzer import MotionEnergyAnalyzer
 import numpy as np
 
-zarr_paths = np.unique(utils.find_zarr_paths())
+DATA_PATH = utils.get_data_folder(pipeline=True)
+zarr_paths = np.unique(utils.find_zarr_paths(DATA_PATH))
 print(f'Found {len(zarr_paths)}.')
 def run():
     for zarr_path in zarr_paths:
