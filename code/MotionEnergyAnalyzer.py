@@ -45,7 +45,7 @@ class MotionEnergyAnalyzer:
             crop_y_start, crop_x_start, crop_y_end, crop_x_end = self.crop_region
             cropped_motion_energy_frames = motion_energy_frames[:, crop_y_start:crop_y_end, crop_x_start:crop_x_end]
             H, W = crop_y_end - crop_y_start, crop_x_end - crop_x_start
-            cropped_motion_energy_frames = cropped_motion_energy_frames.rechunk((100, H, W)
+            cropped_motion_energy_frames = cropped_motion_energy_frames.rechunk((100, H, W))
             print('cropping is done.') 
 
         print('Motion Energy frames are done.')
