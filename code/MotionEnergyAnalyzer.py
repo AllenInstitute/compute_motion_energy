@@ -51,7 +51,7 @@ class MotionEnergyAnalyzer:
 
         ### Construct path where to save data ###
         top_zarr_folder = utils.construct_zarr_folder(self.video_metadata)
-        top_zarr_path = os.path.join(utils.get_results_path(), top_zarr_folder)
+        top_zarr_path = os.path.join(utils.get_results_folder(pipeline=True), top_zarr_folder)
 
         ### Save motion energy frames as a video ###
         # path in results to where data from this video will be saved
