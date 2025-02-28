@@ -6,7 +6,14 @@ from tqdm import tqdm
 import cv2
 from pathlib import Path
 
-def find_zarr_paths(directory: Path = Path(), subselect: str = '', tag: str = '') -> list:
+PATTERN = ".zarr"
+
+def get_zarr_paths(directory: Path ) -> list[str]:
+    return [
+        str(p) for p in directory.rglob(PATTERN)
+    ]
+
+def find_zarr_paths_old(directory: Path = Path(), subselect: str = '', tag: str = '') -> list:
     """
     Retrieve paths to Zarr directories within the specified directory, optionally filtered by a subdirectory.
 
@@ -20,6 +27,7 @@ def find_zarr_paths(directory: Path = Path(), subselect: str = '', tag: str = ''
     """
     zarr_paths = []
     for root, dirs, _ in os.walk(directory):
+        print(dirs)
         if subselect not in root:
             continue  # Skip directories that don't match the subselect filter
         
