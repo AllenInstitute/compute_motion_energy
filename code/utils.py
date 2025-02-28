@@ -6,12 +6,6 @@ from tqdm import tqdm
 import cv2
 from pathlib import Path
 
-PATTERN = ".zarr"
-
-def get_zarr_paths_alt(directory: Path ) -> list[str]:
-    return [
-        str(p) for p in directory.rglob(PATTERN)
-    ]
 
 def find_zarr_paths(directory: Path = Path(), subselect: str = '', tag: str = '') -> list:
     """
