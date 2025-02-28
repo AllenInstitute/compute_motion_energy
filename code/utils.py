@@ -8,12 +8,12 @@ from pathlib import Path
 
 PATTERN = ".zarr"
 
-def get_zarr_paths(directory: Path ) -> list[str]:
+def get_zarr_paths_alt(directory: Path ) -> list[str]:
     return [
         str(p) for p in directory.rglob(PATTERN)
     ]
 
-def find_zarr_paths_old(directory: Path = Path(), subselect: str = '', tag: str = '') -> list:
+def find_zarr_paths(directory: Path = Path(), subselect: str = '', tag: str = '') -> list:
     """
     Retrieve paths to Zarr directories within the specified directory, optionally filtered by a subdirectory.
 
