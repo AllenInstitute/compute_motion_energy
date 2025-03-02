@@ -63,24 +63,6 @@ class MotionEnergyAnalyzer:
         utils.save_video(frames = grayscale_frames, video_path = top_zarr_path,
         video_name='example_video_clip.avi', fps=self.video_metadata.get('fps'), num_frames=1000)
 
-        # Save motion energy frames to zarr
-        me_zarr_filename = utils.get_zarr_filename(path_to='motion_energy')
-        me_zarr_path = os.path.join(top_zarr_path, me_zarr_filename)
-
-        me_zarr_store = zarr.DirectoryStore(me_zarr_path)
-        root_group = zarr.group(me_zarr_store, overwrite=True)
-        motion_energy_frames.to_zarr(me_zarr_store, component='full_frames', overwrite=True)
-        if self.crop:
-            cropped_motion_energy_frames.to_zarr(me_zarr_store, component='cropped_frames', overwrite=True)
-            print('Saved cropped frames too.')
-        print(f'Saved motion energy frames to {me_zarr_path}')
-
-        ### Add metadata to the Zarr store ###
-        # Turn object attributed to dicitonary
-        meta_dict = utils.object_to_dict(self)
-        root_group.attrs['metadata'] = json.dumps(meta_dict)
-        print('added metadata to zarr files.')
-
         ### Compute trace and save it to the object ###
         sum_trace = motion_energy_frames.sum(axis=(1, 2)).compute().reshape(-1, 1)
         self.full_frame_motion_energy_sum = sum_trace
@@ -101,7 +83,23 @@ class MotionEnergyAnalyzer:
             pickle.dump(obj_dict, file)
         print('saved motion energy object as dicitonary, for redundancy.')
 
+        # Save motion energy frames to zarr
+        me_zarr_filename = utils.get_zarr_filename(path_to='motion_energy')
+        me_zarr_path = os.path.join(top_zarr_path, me_zarr_filename)
 
+        me_zarr_store = zarr.DirectoryStore(me_zarr_path)
+        root_group = zarr.group(me_zarr_store, overwrite=True)
+        if self.crop:
+            cropped_motion_energy_frames.to_zarr(me_zarr_store, component='cropped_frames', overwrite=True)
+            print('Saved cropped frames too.')
+        motion_energy_frames.to_zarr(me_zarr_store, component='full_frames', overwrite=True)
+        print(f'Saved motion energy frames to {me_zarr_path}')
+
+        ### Add metadata to the Zarr store ###
+        # Turn object attributed to dicitonary
+        meta_dict = utils.object_to_dict(self)
+        root_group.attrs['metadata'] = json.dumps(meta_dict)
+        print('added metadata to zarr files.')
         
     ## TypeError: _compute_motion_energy() takes 1 positional argument but 2 were given
 
