@@ -65,18 +65,22 @@ class MotionEnergyAnalyzer:
         else:
             self.cropped_frame_motion_energy_sum = np.full(len(sum_trace), np.nan).reshape(-1, 1)
 
-        # save motion energy trace for redundancy as np array
-        np.savez(f'{top_zarr_path}/motion_energy_trace.npz', 
-            full_frame_motion_energy = self.full_frame_motion_energy_sum, cropped_frame_motion_energy = self.cropped_frame_motion_energy_sum)
-        print('saved motion energy trace to npz file for redundancy.')
+        try:
+            # save motion energy trace for redundancy as np array
+            np.savez(f'{top_zarr_path}/motion_energy_trace.npz', 
+                full_frame_motion_energy = self.full_frame_motion_energy_sum, cropped_frame_motion_energy = self.cropped_frame_motion_energy_sum)
+            print('saved motion energy trace to npz file for redundancy.')
+        except:
+            print('Could not save npz file {top_zarr_path}')
 
         ## save object as dicitonary
-        obj_dict = utils.object_to_dict(self)  
-        with open(f'{top_zarr_path}/motion_energy_dictionary.pkl', 'wb') as file:
-            pickle.dump(obj_dict, file)
-        print('saved motion energy object as dicitonary, for redundancy.')
-
-
+        try:
+            obj_dict = utils.object_to_dict(self)  
+            with open(f'{top_zarr_path}/motion_energy_dictionary.pkl', 'wb') as file:
+                pickle.dump(obj_dict, file)
+            print('saved motion energy object as dicitonary, for redundancy.')
+        except:
+            print('Could not save pkl file {top_zarr_path}')
 
         # Save motion energy frames to zarr
         me_zarr_filename = utils.get_zarr_filename(path_to='motion_energy')
@@ -95,7 +99,7 @@ class MotionEnergyAnalyzer:
         meta_dict = utils.object_to_dict(self)
         root_group.attrs['metadata'] = json.dumps(meta_dict)
         print('added metadata to zarr files.')
-        
+
         ### Save motion energy frames as a video ###
         # path in results to where data from this video will be saved
         utils.save_video(frames = motion_energy_frames, video_path = top_zarr_path,
