@@ -51,7 +51,6 @@ class MotionEnergyAnalyzer:
         print('Motion Energy frames are done.')
 
         ### Construct path where to save data ###
-        self.video_metadata['data_asset_name']='test'
         top_zarr_folder = utils.construct_zarr_folder(self.video_metadata)
         #top_zarr_path = os.path.join(utils.get_results_folder(pipeline=True), top_zarr_folder)
         top_zarr_path = os.path.join("/results/", top_zarr_folder)
