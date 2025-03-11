@@ -52,7 +52,8 @@ class MotionEnergyAnalyzer:
 
         ### Construct path where to save data ###
         top_zarr_folder = utils.construct_zarr_folder(self.video_metadata)
-        top_zarr_path = os.path.join(utils.get_results_folder(pipeline=True), top_zarr_folder)
+        #top_zarr_path = os.path.join(utils.get_results_folder(pipeline=True), top_zarr_folder)
+        top_zarr_path = os.path.join("/results/", top_zarr_folder)
         if os.path.exists(top_zarr_path) is False:
             os.makedirs(top_zarr_path)
 
@@ -96,8 +97,11 @@ class MotionEnergyAnalyzer:
 
         ### Add metadata to the Zarr store ###
         # Turn object attributed to dicitonary
+       
+        self.cropped_frame_motion_energy_sum = list(self.cropped_frame_motion_energy_sum)
+        self.full_frame_motion_energy_sum = list(self.full_frame_motion_energy_sum)
         meta_dict = utils.object_to_dict(self)
-        root_group.attrs['metadata'] = json.dumps(meta_dict, cls = NumpyEncoder)
+        root_group.attrs['metadata'] = json.dumps(meta_dict)
         print('added metadata to zarr files.')
 
         ### Save motion energy frames as a video ###
