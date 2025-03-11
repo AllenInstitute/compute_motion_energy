@@ -56,13 +56,6 @@ class MotionEnergyAnalyzer:
         if os.path.exists(top_zarr_path) is False:
             os.makedirs(top_zarr_path)
 
-        ### Save motion energy frames as a video ###
-        # path in results to where data from this video will be saved
-        utils.save_video(frames = motion_energy_frames, video_path = top_zarr_path,
-        video_name='motion_energy_clip.avi', fps=self.video_metadata.get('fps'), num_frames=1000)
-        utils.save_video(frames = grayscale_frames, video_path = top_zarr_path,
-        video_name='example_video_clip.avi', fps=self.video_metadata.get('fps'), num_frames=1000)
-
         ### Compute trace and save it to the object ###
         sum_trace = motion_energy_frames.sum(axis=(1, 2)).compute().reshape(-1, 1)
         self.full_frame_motion_energy_sum = sum_trace
@@ -83,6 +76,8 @@ class MotionEnergyAnalyzer:
             pickle.dump(obj_dict, file)
         print('saved motion energy object as dicitonary, for redundancy.')
 
+
+
         # Save motion energy frames to zarr
         me_zarr_filename = utils.get_zarr_filename(path_to='motion_energy')
         me_zarr_path = os.path.join(top_zarr_path, me_zarr_filename)
@@ -100,6 +95,15 @@ class MotionEnergyAnalyzer:
         meta_dict = utils.object_to_dict(self)
         root_group.attrs['metadata'] = json.dumps(meta_dict)
         print('added metadata to zarr files.')
+        
+        ### Save motion energy frames as a video ###
+        # path in results to where data from this video will be saved
+        utils.save_video(frames = motion_energy_frames, video_path = top_zarr_path,
+        video_name='motion_energy_clip.avi', fps=self.video_metadata.get('fps'), num_frames=1000)
+        utils.save_video(frames = grayscale_frames, video_path = top_zarr_path,
+        video_name='example_video_clip.avi', fps=self.video_metadata.get('fps'), num_frames=1000)
+
+        
         
     ## TypeError: _compute_motion_energy() takes 1 positional argument but 2 were given
 
