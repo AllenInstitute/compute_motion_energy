@@ -98,10 +98,8 @@ class MotionEnergyAnalyzer:
         ### Add metadata to the Zarr store ###
         # Turn object attributed to dicitonary
        
-        self.cropped_frame_motion_energy_sum = list(self.cropped_frame_motion_energy_sum)
-        self.full_frame_motion_energy_sum = list(self.full_frame_motion_energy_sum)
         meta_dict = utils.object_to_dict(self)
-        root_group.attrs['metadata'] = json.dumps(meta_dict)
+        root_group.attrs['metadata'] = json.dumps(meta_dict, cls = NumpyEncoder)
         print('added metadata to zarr files.')
 
         ### Save motion energy frames as a video ###
@@ -122,6 +120,8 @@ class NumpyEncoder(json.JSONEncoder):
             return float(obj)
         elif isinstance(obj, np.ndarray):
             return obj.tolist()
+        elif isinstance(obj, PosixPath)
+            return str(obj)
         return json.JSONEncoder.default(self, obj)
 
     ## TypeError: _compute_motion_energy() takes 1 positional argument but 2 were given
