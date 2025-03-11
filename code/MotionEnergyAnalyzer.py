@@ -73,7 +73,7 @@ class MotionEnergyAnalyzer:
         except:
             print('Could not save npz file {top_zarr_path}')
 
-        ## save object as dicitonary
+        ## save object as dictionary
         try:
             obj_dict = utils.object_to_dict(self)  
             with open(f'{top_zarr_path}/motion_energy_dictionary.pkl', 'wb') as file:
@@ -97,7 +97,7 @@ class MotionEnergyAnalyzer:
         ### Add metadata to the Zarr store ###
         # Turn object attributed to dicitonary
         meta_dict = utils.object_to_dict(self)
-        root_group.attrs['metadata'] = json.dumps(meta_dict)
+        root_group.attrs['metadata'] = json.dumps(meta_dict, cls = NumpyEncoder)
         print('added metadata to zarr files.')
 
         ### Save motion energy frames as a video ###
@@ -108,7 +108,18 @@ class MotionEnergyAnalyzer:
         video_name='example_video_clip.avi', fps=self.video_metadata.get('fps'), num_frames=1000)
 
         
-        
+
+class NumpyEncoder(json.JSONEncoder):
+    """ Special json encoder for numpy types """
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return json.JSONEncoder.default(self, obj)
+
     ## TypeError: _compute_motion_energy() takes 1 positional argument but 2 were given
 
     # def _compute_motion_energy(frames):
