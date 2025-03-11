@@ -1,9 +1,0 @@
-{
-	"version": 1,
-	"attached_datasets": [
-		{
-			"id": "d43536e7-ece8-40e3-b923-0fce04673d11",
-			"mount": "Thyme_736963_Face_Zarr_video1"
-		}
-	]
-}
