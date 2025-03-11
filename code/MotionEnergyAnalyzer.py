@@ -120,7 +120,7 @@ class NumpyEncoder(json.JSONEncoder):
             return float(obj)
         elif isinstance(obj, np.ndarray):
             return obj.tolist()
-        elif isinstance(obj, PosixPath:
+        elif isinstance(obj, PosixPath):
             return str(obj)
         return json.JSONEncoder.default(self, obj)
 
