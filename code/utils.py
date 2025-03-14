@@ -97,7 +97,7 @@ def construct_zarr_folder(metadata: dict) -> str:
         str: Constructed folder name.
     """
     try:
-        return f"{metadata['mouse_id']}_{metadata['data_asset_name']}_{metadata['camera_label']}_motion_energy"
+        return f"{metadata['data_asset_name']}_{metadata['camera_label']}_motion_energy"
     except KeyError as e:
         raise KeyError(f"Missing required metadata field: {e}")
 
