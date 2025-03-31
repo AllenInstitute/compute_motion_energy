@@ -1,0 +1,9 @@
+{
+	"version": 1,
+	"attached_datasets": [
+		{
+			"id": "6afca31d-c7bf-4d8c-bbf9-4113b9fd84c8",
+			"mount": "736963_behavior_videos_zarr_031025"
+		}
+	]
+}
