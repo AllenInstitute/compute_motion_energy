@@ -15,7 +15,7 @@ RUN pip3 install -U --no-cache-dir \
 	dask \
 	zarr \
 	matplotlib \
-    jupyterlab=3.0.9 \ 
+    jupyterlab \ 
     ipykernel
 
 RUN cd /.code-server \
