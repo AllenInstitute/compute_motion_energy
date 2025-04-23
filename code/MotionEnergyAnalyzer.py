@@ -65,8 +65,8 @@ class MotionEnergyAnalyzer:
         frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
         # Output video for motion energy
-        output_video_path = self._get_full_results_path() / "motion_energy_video.avi"
-        fourcc = cv2.VideoWriter_fourcc(*'XVID')
+        output_video_path = self._get_full_results_path() / "motion_energy_video.mp4"
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         out = cv2.VideoWriter(str(output_video_path), fourcc, fps, (frame_width, frame_height), isColor=False)
 
         # Motion energy sums CSV path
