@@ -7,6 +7,27 @@ import cv2
 from pathlib import Path
 
 
+def get_metadata_json(self):
+    json_path = Path(self.video_path).with_suffix('.json')
+    return json_path
+
+
+def construct_results_folder(metadata: dict) -> str:
+    """
+    Construct the folder name for Zarr storage based on metadata.
+
+    Args:
+        metadata (dict): A dictionary containing 'mouse_id', 'camera_label', and 'data_asset_name'.
+
+    Returns:
+        str: Constructed folder name.
+    """
+    try:
+        return f"{metadata['data_asset_name']}_{metadata['camera_label']}_motion_energy"
+    except KeyError as e:
+        raise KeyError(f"Missing required metadata field: {e}")
+        
+
 def find_zarr_paths(directory: Path = Path(), subselect: str = '', tag: str = '') -> list:
     """
     Retrieve paths to Zarr directories within the specified directory, optionally filtered by a subdirectory.
@@ -86,20 +107,7 @@ def get_zarr_filename(path_to: str = 'motion_energy') -> str:
     return filename
 
 
-def construct_zarr_folder(metadata: dict) -> str:
-    """
-    Construct the folder name for Zarr storage based on metadata.
 
-    Args:
-        metadata (dict): A dictionary containing 'mouse_id', 'camera_label', and 'data_asset_name'.
-
-    Returns:
-        str: Constructed folder name.
-    """
-    try:
-        return f"{metadata['data_asset_name']}_{metadata['camera_label']}_motion_energy"
-    except KeyError as e:
-        raise KeyError(f"Missing required metadata field: {e}")
 
 def object_to_dict(obj):
     """

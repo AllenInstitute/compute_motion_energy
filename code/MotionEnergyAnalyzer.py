@@ -8,63 +8,116 @@ import os
 import utils
 import pickle
 
+load_from_zarr_files = False
+RESULTS = Path("/results")
+
 class MotionEnergyAnalyzer:
-    def __init__(self, frame_zarr_path: str, crop: bool = True):
-        self.frame_zarr_path = frame_zarr_path
-        self.zarr_store_frames = zarr.DirectoryStore(frame_zarr_path)
+    def __init__(self, video_path: str, crop: bool = True):
+        self.video_oath = video_path
         self.video_metadata = None
         self.crop = crop
         if crop:
             self.crop_region = utils.get_crop_region()
             
     def _load_metadata(self):
-        """Load metadata from the Zarr store."""
-        root_group = zarr.open_group(self.zarr_store_frames, mode='r')
-        metadata = json.loads(root_group.attrs['metadata'])
+        """Load metadata from json file."""
+        json_path = utils.get_metadata_json(self)
+        with json_path.open('r') as f:
+            metadata = json.load(f)
         self.video_metadata = metadata
+    
+    def _validate_frame(frame):
+        if frame.ndim == 2:  # Already grayscale
+            return frame
+        elif frame.ndim == 3 and frame.shape[2] == 3:  # Color image (BGR)
+            return cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        else:
+            raise ValueError(f"Unexpected frame shape: {frame.shape}")
+
+    def _get_full_results_path(self):
+        folder = utils.construct_results_folder(self.metadata)
+        results_path = Path(RESULTS, folder)
+        return results_path
+
+    def _get_motion_energy_frame(prev_gray, gray):
+        motion_energy_frame = cv2.absdiff(gray, prev_gray)
+        motion_energy_frame = cv2.normalize(motion_energy_frame, None, 0, 255, cv2.NORM_MINMAX)
+        motion_energy_frame = motion_energy_frame.astype(np.uint8)  # Ensure 8-bit for writing
+        return motion_energy_frame
 
 
-    def _analyze(self):
+    def _compute_ME_from_video(self):
+
+        ## LOAD AND PROCESS VIDEO
+        # Open the input video
+        cap = cv2.VideoCapture(self.video_path)
+        if not cap.isOpened():
+            raise IOError(f"Cannot open video file {input_video_path}")
+
+        # Get video properties
+        frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+        # Define the codec and create VideoWriter object for ME frames
+        fourcc = cv2.VideoWriter_fourcc(*'XVID')
+        self.output_video_path = Path(self._get_full_results_path, "motion_energy_video.avi")
+        out = cv2.VideoWriter(self.output_video_path, fourcc, fps, (frame_width, frame_height), isColor=False)
+        
+        # Define CSV file for ME trace
+        self.me_sums_output_path = Path(self._get_full_results_path, "motion_energy_sums.csv")
+        frame_idx = 1  # Start from frame 1 (since first frame is skipped)
+        motion_energy_sums = []  # Store ME sums
+
+        # Read the first frame
+        ret, prev_frame = cap.read()
+        if not ret:
+            raise IOError("Error reading the first frame from the video.")
+        prev_gray = self._validate_frame(prev_frame)
+
+
+        ## COMPUTE MOTION ENERGY
+        # Iterate from second frame onward
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                break      
+
+            gray = self._validate_frame(frame)
+            motion_energy_frame = self._get_motion_energy_frame(gray, prev_gray)
+
+            me_sum = int(np.sum(motion_energy_frame))
+            motion_energy_sums.append(me_sum)
+
+            out.write(motion_energy_frame)
+            prev_gray = gray
+            frame_idx += 1
+
+        cap.release()
+        out.release()
+
+         # Save ME sums to CSV
+        df = pd.DataFrame({'motion_energy_sum': motion_energy_sums})
+        df.to_csv(self.me_sums_output_path, index=True)
+
+        print(f"Motion energy video saved to {self.output_video_path}")
+        print(f"Motion energy sums saved to {self.me_sums_output_path}")
+
+
+    def analyze(self):
         """
         Analyze motion energy based on the frames.
         Applies cropping if the crop attribute is True and saves results.
         """
-        ### Load the frames from Zarr ###
-        grayscale_frames = da.from_zarr(self.zarr_store_frames, component='data')
-
-        ### Load metadata ###
+        
+        # Load metadata
         self._load_metadata()
 
-        ### Compute motion energy frames ###
-        H, W = self.video_metadata.get('height'), self.video_metadata.get('width')
-        motion_energy_frames = da.abs(grayscale_frames[1:] - grayscale_frames[:-1])
-        print('Dropped first frame of the video since its metadata')
-        motion_energy_frames = motion_energy_frames.rechunk((100, H, W))  # Adjust based on available memory
+        # Compute ME frame by frame, save results
+        self._compute_ME_from_video(self)
 
-        if self.crop: 
-            crop_y_start, crop_x_start, crop_y_end, crop_x_end = self.crop_region
-            cropped_motion_energy_frames = motion_energy_frames[:, crop_y_start:crop_y_end, crop_x_start:crop_x_end]
-            H, W = crop_y_end - crop_y_start, crop_x_end - crop_x_start
-            cropped_motion_energy_frames = cropped_motion_energy_frames.rechunk((100, H, W))
-            print('cropping is done.') 
 
-        print('Motion Energy frames are done.')
-
-        ### Construct path where to save data ###
-        top_zarr_folder = utils.construct_zarr_folder(self.video_metadata)
-        #top_zarr_path = os.path.join(utils.get_results_folder(pipeline=True), top_zarr_folder)
-        top_zarr_path = os.path.join("/results/", top_zarr_folder)
-        if os.path.exists(top_zarr_path) is False:
-            os.makedirs(top_zarr_path)
-
-        ### Compute trace and save it to the object ###
-        sum_trace = motion_energy_frames.sum(axis=(1, 2)).compute().reshape(-1, 1)
-        self.full_frame_motion_energy_sum = sum_trace
-        if self.crop:
-            self.cropped_frame_motion_energy_sum = \
-            cropped_motion_energy_frames.sum(axis=(1, 2)).compute().reshape(-1, 1)
-        else:
-            self.cropped_frame_motion_energy_sum = np.full(len(sum_trace), np.nan).reshape(-1, 1)
 
         try:
             # save motion energy trace for redundancy as np array
