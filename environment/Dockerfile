@@ -22,3 +22,11 @@ RUN cd /.code-server \
 	&& ln -s /.code-server/code-server-4.9.0-linux-amd64/bin/code-server  /usr/bin/code-server
 
 RUN apt-get update && apt-get install ffmpeg libsm6 libxext6  -y
+
+RUN mkdir -p /.vscode/extensions \
+    && code-server --extensions-dir="/.vscode/extensions" --install-extension REditorSupport.R \
+    && code-server --extensions-dir="/.vscode/extensions" --install-extension continue.continue \
+    && code-server --extensions-dir="/.vscode/extensions" --install-extension ms-python.python \
+    && code-server --extensions-dir="/.vscode/extensions" --install-extension ms-toolsai.jupyter \
+    && code-server --extensions-dir="/.vscode/extensions" --install-extension reageyao.bioSyntax \
+    && code-server --extensions-dir="/.vscode/extensions" --install-extension saoudrizwan.claude-dev
