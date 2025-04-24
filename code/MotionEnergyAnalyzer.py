@@ -89,7 +89,7 @@ class MotionEnergyAnalyzer:
         behavior_video_clip = []
         motion_energy_clip = []
 
-        frame_idx = 1  # Start from second frame
+        frame_idx = 0
         while True:
             ret, frame = cap.read()
             
