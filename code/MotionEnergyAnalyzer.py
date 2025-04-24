@@ -82,6 +82,7 @@ class MotionEnergyAnalyzer:
 
         # Initialize variables
         ret, prev_frame = cap.read()
+        prev_frame= prev_frame[crop_y_start:crop_y_end, crop_x_start:crop_x_end]
         if not ret:
             raise IOError("Error reading the first frame.")
         prev_gray = self._validate_frame(prev_frame)
