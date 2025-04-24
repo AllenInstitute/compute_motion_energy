@@ -81,7 +81,7 @@ def save_video(frames, video_path='', video_name='', fps=60):
     num_frames, frame_height, frame_width = frames.shape
 
     # Initialize VideoWriter
-    fourcc = cv2.VideoWriter_fourcc(*'XVID')
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     out = cv2.VideoWriter(str(output_video_path), fourcc, fps, (frame_width, frame_height), isColor=False)
 
     # Write frames

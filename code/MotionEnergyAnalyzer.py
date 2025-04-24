@@ -67,9 +67,10 @@ class MotionEnergyAnalyzer:
 
         # Video properties
         fps = cap.get(cv2.CAP_PROP_FPS)
-        
         frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        self.gray_video_fps = fps
+        self.gray_video_size = (fame_height, frame_width)
 
         # Output video for motion energy
         output_video_path = self._get_full_results_path() / "motion_energy_video.mp4"
@@ -123,8 +124,8 @@ class MotionEnergyAnalyzer:
         df.to_csv(me_sums_output_path, index=True)
 
         # Save video clips
-        utils.save_video(behavior_video_clip, video_path=self._get_full_results_path() / "gray_video_clip.avi", fps=fps)
-        utils.save_video(motion_energy_clip, video_path=self._get_full_results_path() / "motion_energy_clip.avi", fps=fps)
+        utils.save_video(behavior_video_clip, video_path=self._get_full_results_path() / "gray_video_clip.mp4", fps=fps)
+        utils.save_video(motion_energy_clip, video_path=self._get_full_results_path() / "motion_energy_clip.mp4", fps=fps)
 
         print(f"Motion energy frames saved to {output_video_path}")
         print(f"Motion energy sums saved to {me_sums_output_path}")
