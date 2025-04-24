@@ -13,6 +13,7 @@ RESULTS = Path("/results")
 class MotionEnergyAnalyzer:
     def __init__(self, video_path: str):
         self.video_path = video_path
+        self.video_name = video_path.stem
         self.video_metadata = None
         self.start_sec = 15
         self.duration_sec = 30
@@ -73,12 +74,12 @@ class MotionEnergyAnalyzer:
         self.gray_video_size = (fame_height, frame_width)
 
         # Output video for motion energy
-        output_video_path = self._get_full_results_path() / "motion_energy_video.mp4"
+        output_video_path = self._get_full_results_path() / f"{self.video_name}_motion_energy.mp4"
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         out = cv2.VideoWriter(str(output_video_path), fourcc, fps, (frame_width, frame_height), isColor=False)
 
         # Motion energy sums CSV path
-        me_sums_output_path = self._get_full_results_path() / "motion_energy_sums.csv"
+        me_sums_output_path = self._get_full_results_path() / f"{self.video_name}_motion_energy_sums.csv"
 
         # Frame indices for short clip
         start_frame = int(self.start_sec * fps)
@@ -90,9 +91,9 @@ class MotionEnergyAnalyzer:
             raise IOError("Error reading the first frame.")
         prev_gray = self._validate_frame(prev_frame)
 
-        motion_energy_sums = []
-        behavior_video_clip = []
-        motion_energy_clip = []
+        motion_energy_sums = [] # collects ME trace values over time
+        behavior_video_clip = [] # collects frames for short example video
+        motion_energy_clip = [] # collects frames for short example video
 
         frame_idx = 0
         while True:
