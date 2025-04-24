@@ -63,10 +63,9 @@ class MotionEnergyAnalyzer:
 
         # Video properties
         fps = cap.get(cv2.CAP_PROP_FPS)
-        crop_y_start, crop_x_start, crop_y_end, crop_x_end = (100, 200, 300, 400)
-        print("testing_crop")
-        frame_width = int(crop_x_end - crop_x_start)#int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        frame_height = int(crop_y_end - crop_y_start)#int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        
+        frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
         # Output video for motion energy
         output_video_path = self._get_full_results_path() / "motion_energy_video.mp4"
@@ -82,7 +81,6 @@ class MotionEnergyAnalyzer:
 
         # Initialize variables
         ret, prev_frame = cap.read()
-        prev_frame= prev_frame[crop_y_start:crop_y_end, crop_x_start:crop_x_end]
         if not ret:
             raise IOError("Error reading the first frame.")
         prev_gray = self._validate_frame(prev_frame)
@@ -94,12 +92,9 @@ class MotionEnergyAnalyzer:
         frame_idx = 1  # Start from second frame
         while True:
             ret, frame = cap.read()
-            #testing crop
-
-            frame = frame[crop_y_start:crop_y_end, crop_x_start:crop_x_end]
+            
             if not ret:
                 break
-
             gray = self._validate_frame(frame)
             me_frame = self._get_motion_energy_frame(prev_gray, gray)
             me_sum = int(np.sum(me_frame))

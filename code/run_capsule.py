@@ -19,6 +19,7 @@ for ext in video_extensions:
 print(f'Found {len(video_files)} videos.')
 def run():
     for video_file in video_files[:1]:
+        print(f'Processing {video_file}')
         start_time = time.time()  # Start the timer
 
         me_analyser = MotionEnergyAnalyzer(video_file)

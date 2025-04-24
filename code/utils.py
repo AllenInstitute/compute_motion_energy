@@ -28,11 +28,10 @@ def construct_results_folder(metadata: dict) -> str:
     Returns:
         str: Folder name for results.
     """
-    return "test_video_crop"
-    #try:
-    #    return f"{metadata['data_asset_name']}_{metadata['camera_label']}_motion_energy"
-    #except KeyError as e:
-    #    raise KeyError(f"Missing required metadata field: {e}")
+    try:
+        return f"{metadata['data_asset_name']}_{metadata['camera_label']}_motion_energy"
+    except KeyError as e:
+        raise KeyError(f"Missing required metadata field: {e}")
 
 
 def object_to_dict(obj):
