@@ -23,6 +23,7 @@ class MotionEnergyAnalyzer:
         with json_path.open('r') as f:
             metadata = json.load(f)
         self.video_metadata = metadata
+        print(f'Metadata from {json_path} loaded successfully.')
 
     def _validate_frame(self, frame):
         """Ensure frames are grayscale."""
@@ -48,12 +49,15 @@ class MotionEnergyAnalyzer:
 
     def _save(self):
         """Save object metadata as JSON."""
+        metadata = {} # create new dictionary to organize video and ME metadata
         meta_dict = utils.object_to_dict(self)
         # Convert Path to str for json file
         metadata_fixed = {k: str(v) if isinstance(v, Path) else v for k, v in meta_dict.items()}
-        me_metadata_path = self._get_full_results_path() / "motion_energy_metadata.json"
+        metadata['video_metadata'] = metadata_fixed['video_metadata']
+        metadata['me_metadata'] = metadata_fixed.pop('video_metadata', None)
+        me_metadata_path = self._get_full_results_path() / "postprocess_metadata.json"
         with me_metadata_path.open('w') as f:
-            json.dump(metadata_fixed, f, indent=4)
+            json.dump(metadata, f, indent=4)
 
     def _compute_ME_from_video(self):
         """Compute and save motion energy video and sums."""
