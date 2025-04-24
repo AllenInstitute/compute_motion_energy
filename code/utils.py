@@ -35,23 +35,19 @@ def construct_results_folder(metadata: dict) -> str:
 
 
 def object_to_dict(obj):
-    """
-    Recursively convert an object and its attributes into a dictionary.
-
-    Args:
-        obj: Object to convert.
-
-    Returns:
-        dict: Dictionary representation of the object.
-    """
     if hasattr(obj, "__dict__"):
-        return {key: object_to_dict(value) for key, value in vars(obj).items()}
+        meta_dict = {key: object_to_dict(value) for key, value in vars(obj).items()}
     elif isinstance(obj, list):
-        return [object_to_dict(item) for item in obj]
+        meta_dict = [object_to_dict(item) for item in obj]
     elif isinstance(obj, dict):
-        return {key: object_to_dict(value) for key, value in obj.items()}
+        meta_dict = {key: object_to_dict(value) for key, value in obj.items()}
     else:
-        return obj
+        meta_dict = obj
+    
+    # Convert Path to str for json file
+    metadata_fixed = {k: str(v) if isinstance(v, Path) else v for k, v in meta_dict.items()}
+    
+    return metadata_fixed
 
 
 def save_video(frames, video_path='', video_name='', fps=60):
