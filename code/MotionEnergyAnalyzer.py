@@ -49,9 +49,11 @@ class MotionEnergyAnalyzer:
     def _save(self):
         """Save object metadata as JSON."""
         meta_dict = utils.object_to_dict(self)
+        # Convert Path to str for json file
+        metadata_fixed = {k: str(v) if isinstance(v, Path) else v for k, v in meta_dict.items()}
         me_metadata_path = self._get_full_results_path() / "motion_energy_metadata.json"
         with me_metadata_path.open('w') as f:
-            json.dump(meta_dict, f, indent=4)
+            json.dump(metadata_fixed, f, indent=4)
 
     def _compute_ME_from_video(self):
         """Compute and save motion energy video and sums."""
@@ -61,8 +63,10 @@ class MotionEnergyAnalyzer:
 
         # Video properties
         fps = cap.get(cv2.CAP_PROP_FPS)
-        frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        crop_y_start, crop_x_start, crop_y_end, crop_x_end = (100, 200, 300, 400)
+        print("testing_crop")
+        frame_width = int(crop_x_end - crop_x_start)#int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        frame_height = int(crop_y_end - crop_y_start)#int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
         # Output video for motion energy
         output_video_path = self._get_full_results_path() / "motion_energy_video.mp4"
@@ -89,6 +93,9 @@ class MotionEnergyAnalyzer:
         frame_idx = 1  # Start from second frame
         while True:
             ret, frame = cap.read()
+            #testing crop
+
+            frame = frame[crop_y_start:crop_y_end, crop_x_start:crop_x_end]
             if not ret:
                 break
 

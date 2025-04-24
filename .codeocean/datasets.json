@@ -2,6 +2,10 @@
 	"version": 1,
 	"attached_datasets": [
 		{
+			"id": "001873d1-abd1-468d-8d33-528afc03f4ef",
+			"mount": "multiplane-ophys_783551_2025-04-22_09-59-07"
+		},
+		{
 			"id": "6afca31d-c7bf-4d8c-bbf9-4113b9fd84c8",
 			"mount": "736963_behavior_videos_zarr_031025"
 		}

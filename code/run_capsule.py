@@ -14,10 +14,9 @@ video_extensions = ('*.mp4', '*.avi')
 # Use glob for each extension
 video_files = []
 for ext in video_extensions:
-    video_files.extend(data_path.rglob(ext))  # Recursive search
+    video_files.extend(DATA_PATH.rglob(ext))  # Recursive search
 
-
-print(f'Found {len(video_files)}.')
+print(f'Found {len(video_files)} videos.')
 def run():
     for video_file in video_files[:1]:
         start_time = time.time()  # Start the timer
