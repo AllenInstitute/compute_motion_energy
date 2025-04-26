@@ -23,7 +23,7 @@ def construct_results_folder(metadata: dict) -> str:
     Construct a results folder name based on metadata fields.
 
     Args:
-        metadata (dict): Must contain 'mouse_id', 'camera_label', and 'data_asset_name'.
+        metadata (dict): Must contain 'camera_label', and 'data_asset_name'.
 
     Returns:
         str: Folder name for results.
