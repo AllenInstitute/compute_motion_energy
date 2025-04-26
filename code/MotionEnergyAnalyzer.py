@@ -1,6 +1,4 @@
 import numpy as np
-import zarr
-import dask.array as da
 import json
 import os
 import cv2
@@ -68,7 +66,7 @@ class MotionEnergyAnalyzer:
         frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.gray_video_fps = fps
-        self.gray_video_size = (fame_height, frame_width)
+        self.gray_video_size = (frame_height, frame_width)
 
         # Output video for motion energy
         output_video_path = self._get_full_results_path() / f"{self.video_metadata.self.video_name}_motion_energy.mp4"
