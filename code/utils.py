@@ -3,7 +3,7 @@ import json
 import numpy as np
 import cv2
 from pathlib import Path
-
+import glob
 
 def get_metadata_json(video_path):
     """
