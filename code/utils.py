@@ -19,6 +19,8 @@ def get_metadata_json(video_path):
     pattern = str(Path(root_dir) / "**metadata.json")
     matches = list(glob.glob(pattern, recursive=True))
     json_file = matches[0]
+    if json_file:
+        print(f'Motion energy capsule found metadata json {json_file}')
     #video_path = str(obj.video_path).replace("_processed", "metadata")
     #return Path(video_path).with_suffix('.json')
     return json_file
