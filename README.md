@@ -1,49 +1,106 @@
-# Motion Energy Analysis Capsule
 
-This repository a second step in Behavior Video QC a pipeline to analyze motion energy from grayscale video frames stored in Zarr format. The script loads frames, computes motion energy, applies cropping if specified, and saves the results as a sample video and Zarr files.
+# MotionEnergyAnalyzer
 
-## Features  
-- Loads grayscale video frames from Zarr format.  
-- Computes motion energy as the absolute difference between consecutive frames.  
-- Supports optional cropping for region-based motion analysis. Crop region is specified in `utils.get_crop_region()`
-- Saves motion energy frames and metadata in zarr group and computed sum motion energy trace in .npz file.  
-- Saves metadata and object attributes as a dictionary for redundancy.  
-- Tracks processing time.  
+`MotionEnergyAnalyzer` is a Python class that processes grayscale video data to compute **motion energy (ME)**—a pixel-wise frame-to-frame difference—and saves the results in both video and numerical formats. This tool is designed for behavioral or neuroscience experiments where motion energy is used to quantify movement over time.
 
-## Prerequisites  
+---
 
-Ensure you have the following dependencies installed:  
+## Features
+
+* Computes **motion energy frames** using absolute pixel differences between consecutive frames
+* Saves ME as:
+
+  * A grayscale `.mp4` video
+  * A `.csv` file with per-frame ME sum values (motion trace)
+* Optionally extracts short clips from the video and ME output
+* Organizes and saves results in structured directories using metadata
+* Loads and saves metadata to/from `postprocess_metadata.json`
+
+---
+
+## Installation
+
+Install required packages:
 
 ```bash
-pip install tqdm numpy zarr dask
-```
-Additionally, make sure `utils.py` is available in your project.
-
-## Usage  
-
-### Running the script  
-Execute the script using:  
-```bash
-python run_capsule.py
+pip install numpy opencv-python pandas
 ```
 
-### Parameters  
+You also need a `utils.py` module that includes:
 
-| Parameter      | Description                                                | Default
-|--------------|------------------------------------------------------------|------------------------
-| `zarr_paths`  | List of paths to Zarr directories containing video frames. | utils.get_zarr_paths()
-| `crop`        | Boolean flag to enable cropping of motion energy analysis. | True
+* `get_metadata_json(self)`
+* `construct_results_folder(metadata: dict)`
+* `object_to_dict(obj)`
+* `save_video(frame_list, video_path: Path, fps: float)`
 
-### Modifying Parameters  
+---
 
-To analyze different Zarr datasets, modify `zarr_paths` in `run_capsule.py`:  
+## Input Requirements
+
+1. **Video file** (e.g., `.mp4`) as input
+2. A corresponding `postprocess_metadata.json` file located next to the video, with the following structure:
+
+```json
+{
+  "video_metadata": {
+    "mouse_id": "123456",
+    "camera_label": "Face",
+    "video_name": "Face_20230101T101010"
+  }
+}
+```
+
+---
+
+## Usage
 
 ```python
-zarr_paths = ['/custom/path/video1.zarr', '/custom/path/video2.zarr']
+from motion_energy_analyzer import MotionEnergyAnalyzer  # Update with actual filename
+from pathlib import Path
+
+analyzer = MotionEnergyAnalyzer(Path("/path/to/video.mp4"))
+analyzer.analyze()
 ```
 
-To enable or disable cropping, set the crop parameter in the MotionEnergyAnalyzer class. Crop region can be specified in utils:
+This will:
 
+* Load metadata
+* Compute motion energy video and trace
+* Save ME `.mp4` and `.csv` files
+* Extract and save short clips from both the original and ME videos
+* Save updated `postprocess_metadata.json` in the results folder
+
+---
+
+## Output
+
+All results are saved under `/results/{mouse_id}_{camera_label}_{video_name}/`, including:
+
+* `Face_20230101T101010_motion_energy.mp4`: ME video
+* `Face_20230101T101010_motion_energy_sums.csv`: CSV of motion energy trace
+* `gray_video_clip.mp4`: 30s clip from original grayscale video
+* `motion_energy_clip.mp4`: 30s clip from ME video
+* `postprocess_metadata.json`: Metadata for downstream tools
+
+---
+
+## Configuration
+
+You can configure clip extraction using the class attributes:
+
+```python
+analyzer.start_sec = 10      # start of clip in seconds
+analyzer.duration_sec = 20   # duration of clip in seconds
 ```
-me_analyser = MotionEnergyAnalyzer(zarr_path, crop=True)
-```
+
+---
+
+## Notes
+
+* All frames are converted to grayscale if needed.
+* The first frame is skipped for ME calculation, but included in clips.
+* Motion energy is calculated using OpenCV's `absdiff()` followed by normalization to \[0, 255].
+
+---
+
+

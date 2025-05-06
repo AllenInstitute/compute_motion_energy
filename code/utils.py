@@ -15,7 +15,10 @@ def get_metadata_json(obj):
     Returns:
         Path: Path to the metadata JSON file.
     """
-    return Path(obj.video_path).with_suffix('.json')
+    json_file = video_path.parent.rglob("*metadata.json")
+    #video_path = str(obj.video_path).replace("_processed", "metadata")
+    #return Path(video_path).with_suffix('.json')
+    return json_file
 
 
 def construct_results_folder(metadata: dict) -> str:
@@ -35,19 +38,54 @@ def construct_results_folder(metadata: dict) -> str:
 
 
 def object_to_dict(obj):
+    """
+    Recursively convert an object (with __dict__) to a dictionary,
+    converting any non-JSON-serializable elements to serializable types.
+    
+    Args:
+        obj: The object or structure to convert.
+    
+    Returns:
+        A JSON-serializable dictionary or list representation.
+    """
     if hasattr(obj, "__dict__"):
-        meta_dict = {key: object_to_dict(value) for key, value in vars(obj).items()}
-    elif isinstance(obj, list):
-        meta_dict = [object_to_dict(item) for item in obj]
+        data = {key: object_to_dict(value) for key, value in vars(obj).items()}
     elif isinstance(obj, dict):
-        meta_dict = {key: object_to_dict(value) for key, value in obj.items()}
+        data = {key: object_to_dict(value) for key, value in obj.items()}
+    elif isinstance(obj, list):
+        data = [object_to_dict(item) for item in obj]
+    elif isinstance(obj, tuple):
+        data = tuple(object_to_dict(item) for item in obj)
     else:
-        meta_dict = obj
+        data = obj
+
+    return _obj_to_dict(data)
+
+
+def _obj_to_dict(data):
+    """
+    Recursively convert non-JSON-serializable items to JSON-compatible types.
     
-    # Convert Path to str for json file
-    metadata_fixed = {k: str(v) if isinstance(v, Path) else v for k, v in meta_dict.items()}
+    Args:
+        data: The data structure (dict, list, etc.) to convert.
     
-    return metadata_fixed
+    Returns:
+        A structure with all values converted to JSON-serializable types.
+    """
+    if isinstance(data, dict):
+        return {k: _obj_to_dict(v) for k, v in data.items()}
+    elif isinstance(data, list):
+        return [_obj_to_dict(item) for item in data]
+    elif isinstance(data, tuple):
+        return [_obj_to_dict(item) for item in data]  # Convert tuple to list
+    elif isinstance(data, np.ndarray):
+        return data.tolist()
+    elif isinstance(data, Path):
+        return str(data)
+    elif isinstance(data, (np.integer, np.floating)):
+        return data.item()
+    else:
+        return data
 
 
 def save_video(frames, video_path='', video_name='', fps=60):
