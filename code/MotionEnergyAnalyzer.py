@@ -17,7 +17,7 @@ class MotionEnergyAnalyzer:
 
     def _load_metadata(self):
         """Load video metadata from a JSON file."""
-        json_path = utils.get_metadata_json(self)
+        json_path = utils.get_metadata_json(self.video_path)
         with json_path.open('r') as f:
             metadata = json.load(f)
         self.video_metadata = metadata

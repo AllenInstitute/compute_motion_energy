@@ -5,17 +5,17 @@ import cv2
 from pathlib import Path
 
 
-def get_metadata_json(obj):
+def get_metadata_json(video_path):
     """
     Get the corresponding JSON metadata path for the video.
 
     Args:
-        obj: An object with a 'video_path' attribute.
+        video_path
 
     Returns:
         Path: Path to the metadata JSON file.
     """
-    json_file = video_path.parent.rglob("*metadata.json")
+    json_file = Path(video_path).parent.rglob("*metadata.json")
     #video_path = str(obj.video_path).replace("_processed", "metadata")
     #return Path(video_path).with_suffix('.json')
     return json_file
