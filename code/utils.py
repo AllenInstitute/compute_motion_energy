@@ -15,7 +15,10 @@ def get_metadata_json(video_path):
     Returns:
         Path: Path to the metadata JSON file.
     """
-    json_file = Path(video_path).parent.rglob("*metadata.json")
+    root_dir = Path(video_path).parent
+    pattern = str(Path(root_dir) / "**metadata.json")
+    matches = list(glob.glob(pattern, recursive=True))
+    json_file = matches[0]
     #video_path = str(obj.video_path).replace("_processed", "metadata")
     #return Path(video_path).with_suffix('.json')
     return json_file
