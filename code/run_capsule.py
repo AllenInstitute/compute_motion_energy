@@ -1,21 +1,29 @@
 """ top level run script """
 import os
-from tqdm import tqdm
+# from tqdm import tqdm
 import utils
-import time  # Added for timing
+import time
+from pathlib import Path
+
 from MotionEnergyAnalyzer import MotionEnergyAnalyzer
 import numpy as np
 
-DATA_PATH = utils.get_data_folder(pipeline=True)
-#zarr_paths = np.unique(utils.find_zarr_paths(DATA_PATH))
-zarr_paths = list(DATA_PATH.glob("*/processed_frames.zarr"))
-print(f'Found {len(zarr_paths)}.')
+DATA_PATH = Path("/data")
+video_extensions = ('*.mp4', '*.avi')
+
+# Use glob for each extension
+video_files = []
+for ext in video_extensions:
+    video_files.extend(DATA_PATH.rglob(ext))  # Recursive search
+
+print(f'Found {len(video_files)} videos.')
 def run():
-    for zarr_path in zarr_paths:
+    for video_file in video_files[:1]:
+        print(f'Processing {video_file}')
         start_time = time.time()  # Start the timer
 
-        me_analyser = MotionEnergyAnalyzer(zarr_path)
-        me_analyser._analyze()
+        me_analyser = MotionEnergyAnalyzer(video_file)
+        me_analyser.analyze()
 
         end_time = time.time()  # End the timer
         duration = end_time - start_time
