@@ -16,7 +16,7 @@ video_files = []
 for ext in video_extensions:
     video_files.extend(DATA_PATH.rglob(ext))  # Recursive search
 
-print(f'Found {len(video_files)} videos.')
+print(f'Found {len(video_files)} processed videos.')
 def run():
     for video_file in video_files[:1]:
         print(f'Processing {video_file}')
