@@ -121,7 +121,7 @@ class MotionEnergyAnalyzer:
     def _save(self):
         """Save object metadata as JSON."""
         metadata = {} # create new dictionary to organize video and ME metadata
-        meta_dict = utils.object_to_dict(self)
+        meta_dict = utils.object_to_dict(self.__dict__.copy())
         metadata['video_metadata'] = meta_dict['video_metadata']
         metadata['me_metadata'] = meta_dict.pop('video_metadata', None)
         me_metadata_path = self._get_full_results_path() / "postprocess_metadata.json"
