@@ -62,12 +62,12 @@ class MotionEnergyAnalyzer:
         self.gray_video_size = (frame_height, frame_width)
 
         # Output video for motion energy
-        output_video_path = self.full_results_path() / f"{self.video_metadata['video_name']}_motion_energy.mp4"
+        output_video_path = self.full_results_path / f"{self.video_metadata['video_name']}_motion_energy.mp4"
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         out = cv2.VideoWriter(str(output_video_path), fourcc, fps, (frame_width, frame_height), isColor=False)
 
         # Motion energy sums CSV path
-        me_sums_output_path = self.full_results_path() / f"{self.video_metadata['video_name']}_motion_energy_sums.csv"
+        me_sums_output_path = self.full_results_path / f"{self.video_metadata['video_name']}_motion_energy_sums.csv"
 
         # Frame indices for short clip
         start_frame = int(self.start_sec * fps)
@@ -114,8 +114,8 @@ class MotionEnergyAnalyzer:
         self.motion_energy_trace = motion_energy_sums
 
         # Save video clips
-        utils.save_video(behavior_video_clip, video_path=self.full_results_path() / "gray_video_clip.mp4", fps=fps)
-        utils.save_video(motion_energy_clip, video_path=self.full_results_path() / "motion_energy_clip.mp4", fps=fps)
+        utils.save_video(behavior_video_clip, video_path=self.full_results_path / "gray_video_clip.mp4", fps=fps)
+        utils.save_video(motion_energy_clip, video_path=self.full_results_path / "motion_energy_clip.mp4", fps=fps)
 
         print(f"Motion energy frames saved to {output_video_path}")
         print(f"Motion energy sums saved to {me_sums_output_path}")
@@ -123,10 +123,11 @@ class MotionEnergyAnalyzer:
     def _save(self):
         """Save object metadata as JSON."""
         metadata = {} # create new dictionary to organize video and ME metadata
-        metadata['video_metadata'] = utils.object_to_dict(self.video_metadata)
+        # this is overcomplicated, but metadata from loading and compute motion energy capsules is saved separately
+        metadata['video_metadata'] = utils.object_to_dict(self.video_metadata) 
         me_dict = utils.object_to_dict(self.__dict__.pop('video_metadata'))
         metadata['me_metadata'] = me_dict
-        me_metadata_path = self.full_results_path() / "postprocess_metadata.json"
+        me_metadata_path = self.full_results_path / "postprocess_metadata.json"
         with me_metadata_path.open('w') as f:
             json.dump(metadata, f, indent=4)
 
