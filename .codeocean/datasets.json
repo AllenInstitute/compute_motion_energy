@@ -1,0 +1,9 @@
+{
+	"version": 1,
+	"attached_datasets": [
+		{
+			"id": "145d938b-5884-4b4f-86cb-d4d485c7231e",
+			"mount": "Behavior_video_loading_capsule_test"
+		}
+	]
+}
